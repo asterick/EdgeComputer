@@ -1,0 +1,24 @@
+{
+  "name": "EdgeComputer",
+  "version": "0.0.0",
+  "description": "Edge Computer: 74xx + GAL Series Computer",
+  "main": "compile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/asterick/EdgeComputer.git"
+  },
+  "author": "Bryon Vandiver",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/asterick/EdgeComputer/issues"
+  },
+  "dependencies": {
+    "pegjs": "~0.7.0",
+    "grunt": "~0.4.1",
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt-shell": "~0.6.0"
+  }
+}

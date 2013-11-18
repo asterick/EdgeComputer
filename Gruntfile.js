@@ -5,7 +5,7 @@ module.exports = function(grunt) {
             options: {                      // Options
                 stdout: true
             },
-            command: './compile.js microcode/source.txt microcode/microcode.bin'
+            command: 'node ./compile.js microcode/source.txt microcode/microcode.bin'
         }
     },
     watch: {

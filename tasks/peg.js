@@ -23,6 +23,6 @@ module.exports = function(grunt) {
 			parser = PEG.buildParser(src, this.data),
 			exportVar = this.data.exportVar || "module.exports";
 
-		grunt.file.write(this.data.outputFile, exportVar + " = " + parser.toSource());
+		grunt.file.write(this.data.outputFile, exportVar + " = " + parser);
 	});
 };
