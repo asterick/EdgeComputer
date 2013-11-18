@@ -1,35 +1,23 @@
 module.exports = function(grunt) {
 	grunt.initConfig({
-    shell: {
-        compile: {
-            options: {                      // Options
-                stdout: true
-            },
-            command: 'node ./compile.js microcode/source.txt microcode/microcode.bin'
-        }
-    },
     watch: {
-			javascript: {
-				files: ["grammar/**/*"],
-				tasks: ["peg", "shell"]
-			},
 			code: {
-				files: ["microcode/**/*", "compile.js"],
-				tasks: ["shell"]
+				files: ["grammar/**/*", "microcode/**/*"],
+				tasks: ["microcode"]
 			}
 		},
-		peg: {
-			microcode : {
+		microcode: {
+			main : {
 				grammar: "grammar/microcode.pegjs",
-				outputFile: "parsers/microcode.js",
-				exportVar: "module.exports"
+				source: "microcode/source.txt",
+				outputFile: "microcode.bin"
 			}
 		}
 	});
 
 	grunt.loadTasks('tasks');
-	grunt.loadNpmTasks('grunt-shell');
+	grunt.loadNpmTasks('grunt-contrib-watch');
 
-	grunt.registerTask("default", ["peg", "shell"]);
+	grunt.registerTask("default", ["microcode"]);
 	grunt.registerTask("dev", ["default", "watch"]);
 };

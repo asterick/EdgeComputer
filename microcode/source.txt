@@ -1,3 +1,49 @@
-opcode(0) {
-	(START, MAR, TLB, R0.B, FLAGS) = MDR + MDR + C, MDR = D;
+/*
+ * Register mapping
+ * R0 = A
+ * R4 = SP
+ * R5 = PC.L
+ * R6 = PC.H
+ */
+
+/* No op */
+opcode(0x00) {}
+
+/* Load R0 with MSR */
+opcode(0x01) {
+	R0 = MSR;
+}
+
+/* Load MSR with R0 */
+opcode(0x02) {
+	MSR.B = R0;	
+}
+
+/* TLB Load instructions */
+opcode(0x03) { privileged, tlb.index = r0; }
+opcode(0x04) { privileged, tlb.flags = r0; }
+opcode(0x04) { privileged, tlb.bank = r0; }
+
+/* Block copy */
+opcode(0x05) {
+	// This is a memory block copy instruction
+	loop:
+	r1 = r1 - 1;
+	if (!c) { goto loop; }
+}
+
+opcode(0x05) { 
+	if (c) {
+		r0 = left r0 c;
+	}
+}
+
+opcode(0xFF) {
+	/* Service interrupt / fault */
+	/* TODO: PRESERVE MAR TO BUS */
+	/* TODO: PUSH START TO STACK */
+}
+
+opcode(99) {
+	MDR = D;
 }

@@ -6,24 +6,34 @@ opcode
   = "opcode"i _ "(" _ o:number _  ")" _ b:block
   	{ return { type: "opcode", code:o, expressions: b }; }
 
+block
+  = "{" _ list:statement* _ "}" _
+  	{ return list; }
+
 statement
   = if
+  / goto
+  / label
   / microcode
 
 if
   = "if"i _ "(" _ invert:"!"? _ condition:identifier ")" _ statements:block otherwise:else?
-  	{ return { type: 'if', invert: invert, condition: condition, otherwise: otherwise, statements: statements }; }
+  	{ return { type: 'if', invert: Boolean(invert), condition: condition, otherwise: otherwise || null, statements: statements }; }
 
 else
   = "else"i _ b:block
   	{ return b; }
 
-block
-  = "{" _ a:microcode b:(";" _ v:microcode { return v; })* ";"? _ "}" _
-  	{ return [a].concat(b); }
+label
+	= l:identifier ":" _
+		{ return { type: "label", label: l }; }
+
+goto
+	= "goto" whitespace+ l:identifier ";" _
+		{ return { type: "goto", label: l }; }
 
 microcode
-  = a:expression b:(","_ v:expression { return v; })*
+  = a:expression b:(","_ v:expression { return v; })* ";" _
   	{ return [a].concat(b); }
 
 expression
@@ -33,50 +43,46 @@ expression
 		{ return { type: "flag", name: v }; }
 
 source
-	= l:atomic o:operator r:source
-		{ return { type: "expression", operator: o, left: l, right: r}; }
-	/ atomic
+	= "d"i whitespace+
+		{ return { type: "databus" }; }
+	/ o:prefix r:property c:atomic?
+		{ return { type: "unary", term: r, carry: c || null }; }
 
-operator
-	= v:("+" / "-" / "^" / "&" / "|") _
+	/ l:property (o:infix r:atomic c:atomic?)?
+
+prefix
+	= v:("left" / "right") whitespace+
+		{ return v; }
+
+infix
+	= v:("+" / "-" / "xor" / "and" / "or") whitespace+
 		{ return v; }
 
 target_list
-	= "(" _ a:register b:("," _ v:register { return v; })* ")" _
+	= "(" _ a:property b:("," _ v:property { return v; })* ")" _
 		{ return [a].concat(b); }
-	/ register
+	/ property
 
 // atomic values
 atomic
-	= register
-	/ identifier
+	= property
 	/ number
 
-register
-	= i:[a-zA-Z0-9]+ w:word? s:".b"i? _
-		{ return { type: 'register', name: i.join(''), word: w || null, byte: Boolean(s) }; }
-
-word
-	= ".h"i
-		{ return "top"; }
-	/ ".l"i
-		{ return "bottom"; }
+property
+	= s:identifier "." p:property
+		{ return { type: "property", source: s, property: p }; }
+	/ i:identifier
+		{ return { type: "identifer", name: i }; }
 
 identifier
 	= v:[a-zA-Z0-9]+ _
 		{ return v.join('').toLowerCase(); }
 
 number
-	= hex
-	/ integer
-
-integer
-	= v:[0-9]+ _
-		{ return parseInt(v.join(''), 10); }
-
-hex
   = "0x"i v:[0-9a-fA-F]+ _
 		{ return parseInt(v.join(''), 16); }
+	/ v:[0-9]+ _
+		{ return parseInt(v.join(''), 10); }
 
 // These are whitespace tokens, ignored
 _
@@ -88,3 +94,4 @@ whitespace
 
 comment
   = "/*" (!"*/" .)* "*/"
+  / "//" (!"\n" .)* "\n"
