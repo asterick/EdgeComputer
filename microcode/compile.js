@@ -27,8 +27,15 @@ module.exports = function(grunt) {
 		}
 
 		function build(statements) {
+			console.log(JSON.stringify(f, null, 4));
+
 			statements.forEach(function (f) {
-				console.log(JSON.stringify(f, null, 4));
+				switch (f.type) {
+					case 'microcode':
+					case 'if':
+					case 'label':
+					case 'goto':
+				}
 			});
 
 			return null;
