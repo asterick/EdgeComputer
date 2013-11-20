@@ -15,11 +15,23 @@ module.exports = function(grunt) {
 				parser = PEG.buildParser(grunt.file.read(this.data.grammar), this.data),
 				layout = structs.parse(grunt.file.read(this.data.layout)),
 				ast = parser.parse(source),
+				inc = 0,
 				output;
 
+		function guid() {
+			return (inc++).toString(36);
+		}
+
+		function encode(statement) {
+
+		}
 
 		function build(statements) {
-			console.log(JSON.stringify(statements, null, 4));
+			statements.forEach(function (f) {
+				console.log(JSON.stringify(f, null, 4));
+			});
+
+			return null;
 		}
 
 		function compile(ast) {
@@ -33,7 +45,7 @@ module.exports = function(grunt) {
 				opcodes[op.code] = build(op.expressions);
 			});
 
-			return "does nothing yet";
+			//return "does nothing yet";
 		}
 
 		output = compile(ast);

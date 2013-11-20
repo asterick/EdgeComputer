@@ -34,7 +34,7 @@ goto
 
 microcode
   = a:expression b:(","_ v:expression { return v; })* ";" _
-  	{ return [a].concat(b); }
+  	{ return { type: "microcode", statements: [a].concat(b) }; }
 
 expression
 	= "priviledged"i _

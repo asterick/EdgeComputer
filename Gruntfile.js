@@ -8,7 +8,7 @@ module.exports = function(grunt) {
 		},
 		microcode: {
 			main : {
-				grammar: "grammar/microcode.pegjs",
+				grammar: "microcode/microcode.pegjs",
 				structjs: "node_modules/struct.js/grammar/struct.peg",
 
 				layout: "microcode/layout.txt",
@@ -18,7 +18,7 @@ module.exports = function(grunt) {
 		}
 	});
 
-	grunt.loadTasks('tasks');
+	grunt.loadTasks('microcode');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 
 	grunt.registerTask("default", ["microcode"]);
