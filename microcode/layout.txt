@@ -16,15 +16,14 @@ big {
 	unsigned:1 	latch_flags;
 
 	// ALU Operation control
-	unsigned:1 	invert_rbus;
-
 	unsigned:3	alu_op;				// a, a & b, a ^ b, a | b, a + b, a - b, a << 1, a >> 1
-	unsigned:2	alu_carry;			// off, on, flags, l-bus top
+	unsigned:2	alu_carry;		// off, on, flags, l-bus top
+	unsigned:1 	invert_r;				// Should immediate be inverted
 
 	// Address bus control
-	unsigned:2	addr_register;		// A1, A2, A3, A4
-	unsigned:1 	bus_direction;		// Read, Write
-	unsigned:1 	bus_byte;			// MDR.L, MDR.H
+	unsigned:2	addr_register;	// A1, A2, A3, A4
+	unsigned:1 	bus_direction;	// Read, Write
+	unsigned:1 	bus_byte;				// MDR.L, MDR.H
 	unsigned:1	mdr_source;			// Mem, Z-Bus
 
 	// TLB Control

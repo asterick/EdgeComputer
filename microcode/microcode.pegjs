@@ -65,13 +65,13 @@ z_target
 	/ "flags"i _
 		{ return { type: 'flags' }; }
 	/ "tlb."i v:("index"i / "bank"i / "flags"i) _
-		{ return { type: 'tlb', register: v }; }
+		{ return { type: 'tlb', register: v.toLowerCase() }; }
 
 mdr_byte
-	= "mdr.h"
-		{ return { type: 'data' }; }
-	/ "mdr.l" _
-		{ return { type: 'data' }; }
+	= "mdr.h"i _
+		{ return { type: 'data', byte: "high" }; }
+	/ "mdr.l"i _
+		{ return { type: 'data', byte: "low" }; }
 
 address
 	= absolute:"#"? "[" _ a:address_reg _ "]" _
@@ -82,10 +82,10 @@ address_reg
 		{ return parseInt(v, 10); }
 
 z_bus
-	= o:prefix r:l_bus ("+" _ c:carry)?
-		{ return { type: "unary", term: r, carry: c || null }; }
-	/ l:l_bus o:infix r:r_bus c:("+" _ c:carry { return c; })?
-		{ return { type: "binary", left: l, right: r, operator: o, carry: c || null }; }
+	= o:prefix r:l_bus c:("+" _ c:carry  { return c; })?
+		{ return { type: "unary", term: r, operator: o, carry: c || null }; }
+	/ l:l_bus o:infix invert:"~"? _ r:r_bus c:("+" _ c:carry { return c; })?
+		{ return { type: "binary", invert:Boolean(invert), left: l, right: r, operator: o, carry: c || null }; }
 	/ l_bus
 
 l_bus
@@ -104,9 +104,9 @@ r_bus
 	= "mdr"i _
 		{ return { type: 'data' }; }
 	/ "fault_code"i _
-		{ return { type: 'data' }; }
+		{ return { type: 'fault' }; }
 	/ "irq_vector"i _
-		{ return { type: 'data' }; }
+		{ return { type: 'irq' }; }
 	/ number
 
 carry
@@ -121,11 +121,11 @@ carry
 
 prefix
 	= v:("left" / "right") whitespace+
-		{ return v; }
+		{ return v.toLowerCase(); }
 
 infix
 	= v:("+" / "-" / "xor" / "and" / "or") whitespace+
-		{ return v; }
+		{ return v.toLowerCase(); }
 
 
 // atomic values

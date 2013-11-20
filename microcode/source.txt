@@ -2,7 +2,12 @@
 opcode(0x00) { }
 
 opcode(0x01) {
-	priviledged, (tlb.index) = r1;
+	//priviledged, (tlb.index, flags, mdr, a3.h, msr) = r1;
+	//priviledged, (tlb.index, flags, mdr, a3.h, msr) = a1.h;
+	//priviledged, (tlb.index, flags, mdr, a3.h, msr) = left r1;
+	//priviledged, (tlb.index, flags, mdr, a3.h, msr) = left r1 + top;
+	//priviledged, (tlb.index, flags, mdr, a3.h, msr) = r1 + mdr + c;	
+	priviledged, (tlb.index, flags, mdr, a3.h, msr) = r1 + ~128 + c;	
 }
 
 opcode(0x02) {
