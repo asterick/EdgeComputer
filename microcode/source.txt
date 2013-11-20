@@ -1,15 +1,14 @@
-/*
- * Register mapping
- * R0 = A
- * R1 = B
- * R2 = C
- * R3 = D
- * R4 = SP (bank is locked to 0x01)
- * R5 = PC
- * R6 = PCB
- */
-
 /* No op */
-opcode(0x00) {
-	priviledged, (flags, mdr, a1.h, msr, r1, tlb.index) = a1.h + 0 + 1;
+opcode(0x00) { }
+
+opcode(0x01) {
+	priviledged, (tlb.index) = r1;
+}
+
+opcode(0x02) {
+	priviledged, (tlb.bank) = r1;
+}
+
+opcode(0x03) {
+	priviledged, (tlb.flags) = r1;
 }
