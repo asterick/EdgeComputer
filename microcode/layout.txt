@@ -1,0 +1,37 @@
+big {
+	// General flags
+	unsigned:1 	privileged;
+
+	// Bus mux
+	unsigned:4	l_bus;
+	unsigned:2	r_bus;
+	unsigned:3	z_reg;
+	unsigned:3	z_addr;
+
+	// Encode 32 values that are "one-hot"
+	unsigned:4	immediate_bit;
+
+	// Latch signals
+	unsigned:1 	latch_addr;
+	unsigned:1 	latch_flags;
+
+	// ALU Operation control
+	unsigned:1 	invert_rbus;
+
+	unsigned:3	alu_op;
+	unsigned:2	alu_carry;
+
+	// Address bus control
+	unsigned:2	addr_register;
+	unsigned:1 	bus_direction;
+	unsigned:1 	bus_byte;
+	unsigned:1	mdr_source;
+
+	// TLB Control
+	unsigned:1 	tlb_disable;
+	unsigned:2 	tlb_write;
+
+	// Next state control
+	unsigned:3		condition_code;
+	unsigned:12		next_state;
+}

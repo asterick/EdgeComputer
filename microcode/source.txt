@@ -1,49 +1,15 @@
 /*
  * Register mapping
  * R0 = A
- * R4 = SP
- * R5 = PC.L
- * R6 = PC.H
+ * R1 = B
+ * R2 = C
+ * R3 = D
+ * R4 = SP (bank is locked to 0x01)
+ * R5 = PC
+ * R6 = PCB
  */
 
 /* No op */
-opcode(0x00) {}
-
-/* Load R0 with MSR */
-opcode(0x01) {
-	R0 = MSR;
-}
-
-/* Load MSR with R0 */
-opcode(0x02) {
-	MSR.B = R0;	
-}
-
-/* TLB Load instructions */
-opcode(0x03) { privileged, tlb.index = r0; }
-opcode(0x04) { privileged, tlb.flags = r0; }
-opcode(0x04) { privileged, tlb.bank = r0; }
-
-/* Block copy */
-opcode(0x05) {
-	// This is a memory block copy instruction
-	loop:
-	r1 = r1 - 1;
-	if (!c) { goto loop; }
-}
-
-opcode(0x05) { 
-	if (c) {
-		r0 = left r0 c;
-	}
-}
-
-opcode(0xFF) {
-	/* Service interrupt / fault */
-	/* TODO: PRESERVE MAR TO BUS */
-	/* TODO: PUSH START TO STACK */
-}
-
-opcode(99) {
-	MDR = D;
+opcode(0x00) {
+	priviledged, (flags, mdr, a1.h, msr, r1, tlb.index) = a1.h + 0 + 1;
 }

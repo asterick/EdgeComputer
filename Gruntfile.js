@@ -9,6 +9,9 @@ module.exports = function(grunt) {
 		microcode: {
 			main : {
 				grammar: "grammar/microcode.pegjs",
+				structjs: "node_modules/struct.js/grammar/struct.peg",
+
+				layout: "microcode/layout.txt",
 				source: "microcode/source.txt",
 				outputFile: "microcode.bin"
 			}
