@@ -22,9 +22,9 @@ big {
 
 	// Address bus control
 	unsigned:2	addr_register;	// A1, A2, A3, A4
-	unsigned:1 	bus_direction;	// Read, Write
+	unsigned:1 	bus_direction;	// Write, Read
 	unsigned:1 	bus_byte;				// MDR.L, MDR.H
-	unsigned:1	mdr_source;			// Mem, Z-Bus
+	unsigned:1	mdr_source;			// Z-Bus, Mem
 
 	// TLB Control
 	unsigned:1 	tlb_disable;

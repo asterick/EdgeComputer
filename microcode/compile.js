@@ -44,14 +44,14 @@ module.exports = function(grunt) {
 						assign("z_reg", 1);	// MSR
 						break ;
 					case 'data':
-						assign("mdr_source", 1); // MDR Z-bus
-						assign("bus_direction", 0);  // Read mode
+						assign("mdr_source", 0); // MDR Z-bus
+						assign("bus_direction", 1);  // Read mode
 						break ;
 					case 'flags':
 						assign("latch_flags", 1); 
 						break ;
 					case 'tlb':
-						assign("tlb_write", { "index": 1, "bank": 2, "flags": 3}[target.register]);
+						assign("tlb_write", { "index": 1, "bank": 2, "flags": 3 }[target.register]);
 						break ;
 				}
 			}
@@ -148,10 +148,10 @@ module.exports = function(grunt) {
 			}
 
 			function assignBus(access) {
-				assign("mdr_source", 0);	// Bus
+				assign("mdr_source", 1);	// Bus
 				assign("tlb_disable",  access.address.absolute ? 1 : 0);
 				assign("addr_register", access.address.register - 1);
-				assign("bus_direction", access.direction === "write" ? 1 : 0);
+				assign("bus_direction", access.direction === "read" ? 1 : 0);
 				assign("bus_byte", access.target.byte === "high" ? 1 : 0);
 			}
 
