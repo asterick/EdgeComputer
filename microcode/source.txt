@@ -1,4 +1,4 @@
-/* No op * /
+/* No op */
 opcode(0x00) { }
 
 opcode(0x01) {
@@ -12,12 +12,11 @@ opcode(0x02) {
 opcode(0x03) {
 	priviledged, (tlb.flags) = r1;
 }
-//*/
+
 // Fast move
 opcode(0x04) {
 	loop:
 
-	// [A1++] = [A2++]
 	mdr.l = [A1], (flags, A1.l) = A1.l + 1;
 	if (c) { a1.h = a1.h + 1; }
 	[A2] = mdr.h, (flags, A2.l) = A2.l + 1;

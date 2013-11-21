@@ -29,7 +29,7 @@ else
   	{ return b; }
 
 label
-	= l:identifier ":" _
+	= l:identifier ":" _ &microcode
 		{ return { type: "label", label: l }; }
 
 goto
@@ -39,6 +39,8 @@ goto
 microcode
   = a:expression b:(","_ v:expression { return v; })* ";" _
   	{ return { type: "microcode", statements: [a].concat(b) }; }
+  / ";" _
+  	{ return { type: "microcode", statements: [] }; }
 
 expression
 	= "priviledged"i _

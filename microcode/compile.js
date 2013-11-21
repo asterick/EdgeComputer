@@ -195,63 +195,80 @@ module.exports = function(grunt) {
 
 
 		// My crappy GUID system
-		var id = (Math.random() * 0xFFFF)|0;
-		function peek() { return (id).toString(36); }
-		function guid() { return (id++).toString(36); }
+		var base_id = 0;
 
 		// Build statement chain
-		function build(statements, table, tail) {
-			function nop() {
-				var id = guid();
-				table[id] = {};
-				return id;
-			}
-
+		function build(statements, table, labels, reassigns, tail) {
 			table || (table = {});
 			tail || (tail = []);
+			labels || (labels = {});
+			reassigns || (reassigns = []);
+
+			var output = { table: table, tail: tail, entry: base_id };
+
+			function setStates(next, branch) {
+				if (branch && tail.length === 0) {
+					throw new Error("Leading with a conditional or goto statement is unsupported");
+				}
+
+				tail.forEach(function (o) {
+					o.target[o.key] = next;
+				});
+			}
 
 			(statements || []).forEach(function (f) {
 				switch (f.type) {
 					case 'microcode':
-						var id = guid(); 
+						var stateId = base_id++,
+								state = encode(f);
 
-						// Set TAIL next state to absolute
+						table[stateId] = state;
+						setStates({ type: 'key', name: stateId });
+						tail = [{ key: "next_state", target: state }];
 
-						table[id] = encode(f);
-						tail = [{ type: "guid", id: id}];
 						break ;
 					case 'if':
-						if (tail.length === 0) { tail = [nop()]; }
+						var branch = { type: 'condition', condition: f.condition },
+								onTrue, onFalse;
 
-						{
-							var onTrue, onFalse;
-
-							if (f.invert) {
-								onFalse = build(f.statements, table);
-								onTrue = build(f.otherwise, table);
-							} else {
-								onFalse = build(f.otherwise, table);
-								onTrue = build(f.statements, table);
-							}
+						if (f.invert) {
+							onFalse = build(f.statements, table, labels, reassigns, [{ key: 'false', target: branch }]);
+							onTrue  = build( f.otherwise, table, labels, reassigns, [{ key:  'true', target: branch }]);
+						} else {
+							onFalse = build( f.otherwise, table, labels, reassigns, [{ key: 'false', target: branch }]);
+							onTrue  = build(f.statements, table, labels, reassigns, [{ key:  'true', target: branch }]);
 						}
 
-						// TODO: CONDITIONAL
+						setStates(branch, true);
 						tail = onFalse.tail.concat(onTrue.tail);
 
 						break ;
 					case 'goto':
-						if (tail.length === 0) { tail = [nop()]; }
+						var next = { type: 'key', target: f.label };
 
-						// TODO: BRANCH TO LABEL
+						reassigns.push(next);
+
+						setStates(next, true);
+						tail = [];
 						break ;
 					case 'label':
+						labels[f.label] = base_id;
 						break ;
 					default:
 						throw new Error("Unhandled AST element: " + f.type);
 				}
 			});
 
-			return { table: table, tail: tail };
+			for (var i = reassigns.length - 1; i >= 0; i--) {
+				var target = reassigns[i].target,
+						value = labels[target];
+
+				if (value === undefined) { continue ; }
+				reassigns[i].target = value;
+				reassigns.splice(i, 1);
+			}
+
+			return output;
 		}
 
 		function compile(ast) {
@@ -262,10 +279,11 @@ module.exports = function(grunt) {
 					throw new Error("Opcode " + op.code + " is already defined");
 				}
 
-				console.log(build(op.expressions));
-				//opcodes[op.code] = build(op.expressions);
+				opcodes[op.code] = build(op.expressions);
 			});
 
+
+			console.log(JSON.stringify(opcodes, null, 4));
 			// TODO: FIT OPCODES
 
 			//return "does nothing yet";
