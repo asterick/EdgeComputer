@@ -3,31 +3,32 @@ big {
 	unsigned:1 	privileged;
 
 	// Bus mux
-	unsigned:4	l_bus;				// MDR, MSR, R1, R2, R3, R4, R5, R6, A1.L, A2.L, A3.L, A4.L, A1.H, A2.H, A3.H, A4.H
-	unsigned:2	r_bus;				// MDR, Immediate, FAULT_CODE, IRQ_VECTOR
-	unsigned:3	z_reg;				// none, MSR, R1, R2, R3, R4, R5, R6
-	unsigned:3	z_addr;				// A1.L, A2.L, A3.L, A4.L, A1.H, A2.H, A3.H, A4.H
+	unsigned:4	l_bus;						// MDR, MSR, R1, R2, R3, R4, R5, R6, A1.L, A2.L, A3.L, A4.L, A1.H, A2.H, A3.H, A4.H
+	unsigned:2	r_bus;						// MDR, Immediate, FAULT_CODE, IRQ_VECTOR
+	unsigned:3	z_reg;						// none, MSR, R1, R2, R3, R4, R5, R6
+	unsigned:3	z_addr;						// A1.L, A2.L, A3.L, A4.L, A1.H, A2.H, A3.H, A4.H
 
-	// Encode 32 values that are "one-hot" (0 is handled by forcing carry)
-	unsigned:4	immediate;			// 1, 2, 4, .., 16384, 32768
+	// Encode 1 hot values for MSR falgs
+	unsigned:4	immediate;				// 0, 1, 2, 4, 8, 16, 256, 512
 
 	// Latch signals
 	unsigned:1 	latch_addr;
 	unsigned:1 	latch_flags;
 
 	// ALU Operation control
-	unsigned:3	alu_op;				// a & ~b, a & b, a ^ b, a | b, a + b, a - b, a << 1, a >> 1
-	unsigned:2	alu_carry;		// off, on, flags, l-bus top
+	// Swap upper and lower 
+	unsigned:3	alu_op;						// a & b, a ^ b, a | b, a + b, a - b, a << 1, a >> 1, swap a
+	unsigned:2	alu_carry;				// off, on, flags, l-bus top
 
 	// Address bus control
-	unsigned:2	addr_register;	// A1, A2, A3, A4
-	unsigned:1 	bus_direction;	// Write, Read
-	unsigned:1 	bus_byte;				// MDR.L, MDR.H
-	unsigned:1	mdr_source;			// Z-Bus, Mem
+	unsigned:2	addr_register;		// A1, A2, A3, A4
+	unsigned:1 	bus_direction;		// Write, Read
+	unsigned:1 	bus_byte;					// MDR.L, MDR.H
+	unsigned:1	mdr_source;				// Z-Bus, Mem
 
 	// TLB Control
 	unsigned:1 	tlb_disable;
-	unsigned:2 	tlb_write;			// None, Index, Flags, Bank
+	unsigned:2 	tlb_write;				// None, Index, Flags, Bank
 
 	// Next state control
 	unsigned:1 		flags_source;		// 0 = MSR, 1 = ALU

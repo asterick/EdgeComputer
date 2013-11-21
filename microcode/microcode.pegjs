@@ -30,7 +30,7 @@ include
 		{ return { type: 'include', name: name }; }
 
 if
-  = "if"i _ "(" _ immediate:"@"? _ invert:"!"? _ condition:condition ")" _ statements:block otherwise:else?
+  = "if"i _ "(" _ immediate:"@"? _ invert:"~"? _ condition:condition ")" _ statements:block otherwise:else?
   	{ return { type: 'if', immediate: Boolean(immediate), invert: Boolean(invert), condition: condition, otherwise: otherwise || null, statements: statements }; }
 
 condition
@@ -140,7 +140,7 @@ carry
 		{ return { type: "top" }; }
 
 prefix
-	= v:("left" / "right") whitespace+
+	= v:("left" / "right" / "swap") whitespace+
 		{ return v.toLowerCase(); }
 
 infix

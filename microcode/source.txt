@@ -1,5 +1,19 @@
+/*
+ *
+ *
+ */
+
 macro (next_operation) {
 	mdr.l = [A4], A4.l = A4.l + 1; if (@c) { A4.h = A4.h + 1; }
+}
+
+macro (push) {
+	A3.l = A3.l + 1; if (@c) { A3.h = A3.h + 1; }
+	[A4] = mdr.l;
+}
+macro (pop) {
+	mdr.l = [A3];
+	A3.l = A3.l + 1; if (@c) { A3.h = A3.h + 1; }
 }
 
 /* No op */
@@ -31,11 +45,23 @@ opcode(0x04) {
 	[A2] = mdr.h, A2.l = A2.l + 1; if (@c) { a2.h = a2.h + 1; }
 	
 	// Decrement counter
-	(flags, r1) = r1 - 1;
-
-	if (!c) { goto loop; }
+	(flags, r1) = r1 - 1; if (~c) { goto loop; }
 
 	# next_operation;
+}
+
+// Long branch on carry
+opcode(0x05) {
+	mdr.l = [A4], A4.l = A4.l + 1; if (@c) { A4.h = A4.h + 1; }
+	mdr.h = [A4], A4.l = A4.l + 1; if (@c) { A4.h = A4.h + 1; }
+	if (c) { A4.l = mdr; }
+	mdr.l = [A4], A4.l = A4.l + 1; if (@c) { A4.h = A4.h + 1; }
+	if (c) { A4.h = mdr; }
+	# next_operation;
+}
+
+opcode(0x06) {
+	msr = msr and 0;
 }
 
 // ISR

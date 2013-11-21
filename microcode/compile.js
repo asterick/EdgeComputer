@@ -75,12 +75,29 @@ module.exports = function(grunt) {
 			}
 
 			function assignImmediate(number) {
-				var imm = Math.log(number)/Math.log(2),
-						floor = Math.floor(imm);
+				var floor = {
+					0x0000: 0,
+					0x0001: 1,
+					0x0002: 2,
+					0x0004: 3,
+					0x0008: 4,
+					0x0010: 5,
+					0x0100: 6,
+					0x0200: 7,
+					0xFFFF: 8,
+					0xFFFE: 9,
+					0xFFFD: 10,
+					0xFFFB: 11,
+					0xFFF7: 12,
+					0xFFEF: 13,
+					0xFEFF: 14,
+					0xFDFF: 15,
+				}[number];
 
-				if (imm !== floor) {
+				if (floor === undefined) {
 					throw new Error("Cannot encode constant " + number);
 				}
+
 				assign("immediate", floor);
 			}
 
@@ -124,13 +141,14 @@ module.exports = function(grunt) {
 
 			function assignOperator(operator) {
 				assign("alu_op", {
-					"+": 1,
-					"-": 2,
-					"and": 3,
-					"or": 4,
-					"xor": 5,
-					"left": 6,
-					"right": 7
+					"+": 0,
+					"-": 1,
+					"and": 2,
+					"or": 3,
+					"xor": 4,
+					"left": 5,
+					"right": 6,
+					"swap": 7
 				}[operator]);
 			}
 
