@@ -17,8 +17,8 @@ statement
   / microcode
 
 if
-  = "if"i _ "(" _ invert:"!"? _ condition:condition ")" _ statements:block otherwise:else?
-  	{ return { type: 'if', invert: Boolean(invert), condition: condition, otherwise: otherwise || null, statements: statements }; }
+  = "if"i _ "(" _ immediate:"@"? _ invert:"!"? _ condition:condition ")" _ statements:block otherwise:else?
+  	{ return { type: 'if', immediate: Boolean(immediate), invert: Boolean(invert), condition: condition, otherwise: otherwise || null, statements: statements }; }
 
 condition
 	= v:("never"i / "ab"i / "gt"i / "ge"i / "c"i / "s"i / "v"i / "n"i) _
@@ -91,8 +91,8 @@ address_reg
 z_bus
 	= o:prefix r:l_bus c:("+" _ c:carry  { return c; })?
 		{ return { type: "unary", term: r, operator: o, carry: c || null }; }
-	/ l:l_bus o:infix invert:"~"? _ r:r_bus c:("+" _ c:carry { return c; })?
-		{ return { type: "binary", invert:Boolean(invert), left: l, right: r, operator: o, carry: c || null }; }
+	/ l:l_bus o:infix r:r_bus c:("+" _ c:carry { return c; })?
+		{ return { type: "binary", left: l, right: r, operator: o, carry: c || null }; }
 	/ l_bus
 
 l_bus

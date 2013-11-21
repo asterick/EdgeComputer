@@ -8,7 +8,7 @@ big {
 	unsigned:3	z_reg;				// none, MSR, R1, R2, R3, R4, R5, R6
 	unsigned:3	z_addr;				// A1.L, A2.L, A3.L, A4.L, A1.H, A2.H, A3.H, A4.H
 
-	// Encode 32 values that are "one-hot"
+	// Encode 32 values that are "one-hot" (0 is handled by forcing carry)
 	unsigned:4	immediate;			// 1, 2, 4, .., 16384, 32768
 
 	// Latch signals
@@ -16,9 +16,8 @@ big {
 	unsigned:1 	latch_flags;
 
 	// ALU Operation control
-	unsigned:3	alu_op;				// a, a & b, a ^ b, a | b, a + b, a - b, a << 1, a >> 1
+	unsigned:3	alu_op;				// a & ~b, a & b, a ^ b, a | b, a + b, a - b, a << 1, a >> 1
 	unsigned:2	alu_carry;		// off, on, flags, l-bus top
-	unsigned:1 	invert_r;				// Should immediate be inverted
 
 	// Address bus control
 	unsigned:2	addr_register;	// A1, A2, A3, A4
@@ -31,6 +30,7 @@ big {
 	unsigned:2 	tlb_write;			// None, Index, Flags, Bank
 
 	// Next state control
+	unsigned:1 		flags_source;		// 0 = MSR, 1 = ALU
 	unsigned:3		condition_code;	// Never, Higher, GreaterOrEqual, Greater, N, V, C, Z
 	unsigned:12		next_state;
 }

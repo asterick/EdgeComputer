@@ -143,7 +143,6 @@ module.exports = function(grunt) {
 				assignOperator(statement.operator);
 				assignLBus(statement.left);
 				assignRBus(statement.right);
-				assign("invert_r", statement.invert ? 1 : 0);
 				assignCarry(statement.carry);
 			}
 
@@ -193,7 +192,6 @@ module.exports = function(grunt) {
 			return output;
 		}
 
-
 		// My crappy GUID system
 		var base_id = 0;
 
@@ -228,7 +226,7 @@ module.exports = function(grunt) {
 
 						break ;
 					case 'if':
-						var branch = { type: 'condition', condition: f.condition },
+						var branch = { type: 'condition', condition: f.condition, immediate: f.immediate },
 								onTrue, onFalse;
 
 						if (f.invert) {

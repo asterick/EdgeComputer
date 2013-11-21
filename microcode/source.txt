@@ -1,29 +1,43 @@
+//http://jayisgames.com/games/infectonator-hot-chase/
 /* No op */
-opcode(0x00) { }
+opcode(0x00) {
+	// Fetch next instruction
+	mdr.l = [A4], A4.l = A4.l + 1; if (@c) { A4.h = A4.h + 1; }
+}
 
 opcode(0x01) {
 	priviledged, (tlb.index) = r1;
+
+	// Fetch next instruction
+	mdr.l = [A4], A4.l = A4.l + 1; if (@c) { A4.h = A4.h + 1; }
 }
 
 opcode(0x02) {
 	priviledged, (tlb.bank) = r1;
+
+	// Fetch next instruction
+	mdr.l = [A4], A4.l = A4.l + 1; if (@c) { A4.h = A4.h + 1; }
 }
 
 opcode(0x03) {
 	priviledged, (tlb.flags) = r1;
+
+	// Fetch next instruction
+	mdr.l = [A4], A4.l = A4.l + 1; if (@c) { A4.h = A4.h + 1; }
 }
 
 // Fast move
 opcode(0x04) {
 	loop:
 
-	mdr.l = [A1], (flags, A1.l) = A1.l + 1;
-	if (c) { a1.h = a1.h + 1; }
-	[A2] = mdr.h, (flags, A2.l) = A2.l + 1;
-	if (c) { a2.h = a2.h + 1; }
+	mdr.l = [A1], A1.l = A1.l + 1; if (@c) { a1.h = a1.h + 1; }
+	[A2] = mdr.h, A2.l = A2.l + 1; if (@c) { a2.h = a2.h + 1; }
 	
 	// Decrement counter
 	(flags, r1) = r1 - 1;
 
 	if (!c) { goto loop; }
+
+	// Fetch next instruction
+	mdr.l = [A4], A4.l = A4.l + 1; if (@c) { A4.h = A4.h + 1; }
 }
