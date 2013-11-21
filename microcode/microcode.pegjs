@@ -17,8 +17,12 @@ statement
   / microcode
 
 if
-  = "if"i _ "(" _ invert:"!"? _ condition:identifier ")" _ statements:block otherwise:else?
+  = "if"i _ "(" _ invert:"!"? _ condition:condition ")" _ statements:block otherwise:else?
   	{ return { type: 'if', invert: Boolean(invert), condition: condition, otherwise: otherwise || null, statements: statements }; }
+
+condition
+	= v:("never"i / "ab"i / "gt"i / "ge"i / "c"i / "s"i / "v"i / "n"i) _
+		{ return v.toLowerCase(); }
 
 else
   = "else"i _ b:block
@@ -49,7 +53,8 @@ expression
 target_list
 	= "(" _ a:z_target b:("," _ v:z_target { return v; })* ")" _
 		{ return [a].concat(b); }
-	/ z_target
+	/ v:z_target
+		{ return [v]; }
 
 z_target
 	= "a"i v:[1-4] ".h"i _

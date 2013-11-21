@@ -1,13 +1,8 @@
-/* No op */
+/* No op * /
 opcode(0x00) { }
 
 opcode(0x01) {
-	//priviledged, (tlb.index, flags, mdr, a3.h, msr) = r1;
-	//priviledged, (tlb.index, flags, mdr, a3.h, msr) = a1.h;
-	//priviledged, (tlb.index, flags, mdr, a3.h, msr) = left r1;
-	//priviledged, (tlb.index, flags, mdr, a3.h, msr) = left r1 + top;
-	//priviledged, (tlb.index, flags, mdr, a3.h, msr) = r1 + mdr + c;	
-	priviledged, (tlb.index, flags, mdr, a3.h, msr) = r1 + ~128 + c;	
+	priviledged, (tlb.index) = r1;
 }
 
 opcode(0x02) {
@@ -16,4 +11,20 @@ opcode(0x02) {
 
 opcode(0x03) {
 	priviledged, (tlb.flags) = r1;
+}
+//*/
+// Fast move
+opcode(0x04) {
+	loop:
+
+	// [A1++] = [A2++]
+	mdr.l = [A1], (flags, A1.l) = A1.l + 1;
+	if (c) { a1.h = a1.h + 1; }
+	[A2] = mdr.h, (flags, A2.l) = A2.l + 1;
+	if (c) { a2.h = a2.h + 1; }
+	
+	// Decrement counter
+	(flags, r1) = r1 - 1;
+
+	if (!c) { goto loop; }
 }

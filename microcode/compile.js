@@ -18,16 +18,12 @@ module.exports = function(grunt) {
 				inc = 0,
 				output;
 
-		function guid() {
-			return (inc++).toString(36);
-		}
-
 		function encode(microcode) {
 			var output = {};
 
 			function assign(key, value) {
 				if (typeof value !== "number") {
-					throw new Error("Compiler attempted to assign non number");
+					throw new Error("Compiler attempted to assign non number to " + key);
 				}
 				if (output[key] !== undefined) {
 					throw new Error(key + " is already defined");
@@ -78,24 +74,13 @@ module.exports = function(grunt) {
 			}
 
 			function assignImmediate(number) {
-				assign("immediate", {
-					1: 0,
-					2: 1,
-					4: 2,
-					8: 3,
-					16: 4,
-					32: 5,
-					64: 6,
-					128: 7,
-					256: 8,
-					512: 9,
-					1024: 10,
-					2048: 11,
-					4096: 12,
-					8192: 13,
-					16384: 14,
-					32768: 15
-				}[number]);
+				var imm = Math.log(number)/Math.log(2),
+						floor = Math.floor(imm);
+
+				if (imm !== floor) {
+					throw new Error("Cannot encode constant " + number);
+				}
+				assign("immediate", floor);
 			}
 
 			function assignRBus(statement) {
@@ -164,7 +149,7 @@ module.exports = function(grunt) {
 
 			function assignBus(access) {
 				assign("mdr_source", 0);	// Bus
-				assign("tlb_disable",  access.address.absolute ? true : false);
+				assign("tlb_disable",  access.address.absolute ? 1 : 0);
 				assign("addr_register", access.address.register - 1);
 				assign("bus_direction", access.direction === "write" ? 1 : 0);
 				assign("bus_byte", access.target.byte === "high" ? 1 : 0);
@@ -208,21 +193,65 @@ module.exports = function(grunt) {
 			return output;
 		}
 
-		function build(statements) {
-			statements.forEach(function (f) {
+
+		// My crappy GUID system
+		var id = (Math.random() * 0xFFFF)|0;
+		function peek() { return (id).toString(36); }
+		function guid() { return (id++).toString(36); }
+
+		// Build statement chain
+		function build(statements, table, tail) {
+			function nop() {
+				var id = guid();
+				table[id] = {};
+				return id;
+			}
+
+			table || (table = {});
+			tail || (tail = []);
+
+			(statements || []).forEach(function (f) {
 				switch (f.type) {
 					case 'microcode':
-						f = encode(f);
+						var id = guid(); 
+
+						// Set TAIL next state to absolute
+
+						table[id] = encode(f);
+						tail = [{ type: "guid", id: id}];
 						break ;
 					case 'if':
-					case 'label':
-					case 'goto':
-				}
+						if (tail.length === 0) { tail = [nop()]; }
 
-				console.log(JSON.stringify(f, null, 4));
+						{
+							var onTrue, onFalse;
+
+							if (f.invert) {
+								onFalse = build(f.statements, table);
+								onTrue = build(f.otherwise, table);
+							} else {
+								onFalse = build(f.otherwise, table);
+								onTrue = build(f.statements, table);
+							}
+						}
+
+						// TODO: CONDITIONAL
+						tail = onFalse.tail.concat(onTrue.tail);
+
+						break ;
+					case 'goto':
+						if (tail.length === 0) { tail = [nop()]; }
+
+						// TODO: BRANCH TO LABEL
+						break ;
+					case 'label':
+						break ;
+					default:
+						throw new Error("Unhandled AST element: " + f.type);
+				}
 			});
 
-			return null;
+			return { table: table, tail: tail };
 		}
 
 		function compile(ast) {
@@ -233,8 +262,11 @@ module.exports = function(grunt) {
 					throw new Error("Opcode " + op.code + " is already defined");
 				}
 
-				opcodes[op.code] = build(op.expressions);
+				console.log(build(op.expressions));
+				//opcodes[op.code] = build(op.expressions);
 			});
+
+			// TODO: FIT OPCODES
 
 			//return "does nothing yet";
 		}

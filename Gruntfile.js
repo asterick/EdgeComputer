@@ -7,7 +7,7 @@ module.exports = function(grunt) {
 			}
 		},
 		microcode: {
-			main : {
+			main: {
 				grammar: "microcode/microcode.pegjs",
 				structjs: "node_modules/struct.js/grammar/struct.peg",
 
