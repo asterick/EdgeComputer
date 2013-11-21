@@ -1,10 +1,18 @@
 body
-  = _ o:opcode*
+  = _ o:top_level*
   	{ return o; }
+
+top_level
+	= opcode
+	/ macro
 
 opcode
   = "opcode"i _ "(" _ o:number _  ")" _ b:block
   	{ return { type: "opcode", code:o, expressions: b }; }
+
+macro
+	= "macro"i _ "(" _ name:identifier ")" _ statements:block
+		{ return { type: "macro", name: name, statements: statements }; }
 
 block
   = "{" _ list:statement* _ "}" _
@@ -12,9 +20,14 @@ block
 
 statement
   = if
+  / include
   / goto
   / label
   / microcode
+
+include
+	= "#" _ name:identifier ";" _
+		{ return { type: 'include', name: name }; }
 
 if
   = "if"i _ "(" _ immediate:"@"? _ invert:"!"? _ condition:condition ")" _ statements:block otherwise:else?
@@ -137,7 +150,7 @@ infix
 
 // atomic values
 identifier
-	= v:[a-zA-Z0-9]+ _
+	= v:[a-zA-Z0-9_]+ _
 		{ return v.join('').toLowerCase(); }
 
 number

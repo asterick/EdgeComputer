@@ -1,29 +1,26 @@
-//http://jayisgames.com/games/infectonator-hot-chase/
+macro (next_operation) {
+	mdr.l = [A4], A4.l = A4.l + 1; if (@c) { A4.h = A4.h + 1; }
+}
+
 /* No op */
 opcode(0x00) {
 	// Fetch next instruction
-	mdr.l = [A4], A4.l = A4.l + 1; if (@c) { A4.h = A4.h + 1; }
+	# next_operation;
 }
 
 opcode(0x01) {
 	priviledged, (tlb.index) = r1;
-
-	// Fetch next instruction
-	mdr.l = [A4], A4.l = A4.l + 1; if (@c) { A4.h = A4.h + 1; }
+	# next_operation;
 }
 
 opcode(0x02) {
 	priviledged, (tlb.bank) = r1;
-
-	// Fetch next instruction
-	mdr.l = [A4], A4.l = A4.l + 1; if (@c) { A4.h = A4.h + 1; }
+	# next_operation;
 }
 
 opcode(0x03) {
 	priviledged, (tlb.flags) = r1;
-
-	// Fetch next instruction
-	mdr.l = [A4], A4.l = A4.l + 1; if (@c) { A4.h = A4.h + 1; }
+	# next_operation;
 }
 
 // Fast move
@@ -38,6 +35,14 @@ opcode(0x04) {
 
 	if (!c) { goto loop; }
 
-	// Fetch next instruction
-	mdr.l = [A4], A4.l = A4.l + 1; if (@c) { A4.h = A4.h + 1; }
+	# next_operation;
+}
+
+// ISR
+opcode(0xFF) {
+	// TODO: PRESERVE SP
+	// TODO: PRESERVE PC
+	// TODO: LOAD SSP -> SP
+	// TODO: LOAD IRQ_VECTOR + ISR_BASE -> PC
+	# next_operation;
 }

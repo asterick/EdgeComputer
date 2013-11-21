@@ -15,6 +15,7 @@ module.exports = function(grunt) {
 				parser = PEG.buildParser(grunt.file.read(this.data.grammar), this.data),
 				layout = structs.parse(grunt.file.read(this.data.layout)),
 				ast = parser.parse(source),
+				macros = {},
 				inc = 0,
 				output;
 
@@ -202,7 +203,7 @@ module.exports = function(grunt) {
 			labels || (labels = {});
 			reassigns || (reassigns = []);
 
-			var output = { table: table, tail: tail, entry: base_id };
+			var entry = base_id;
 
 			function setStates(next, branch) {
 				if (branch && tail.length === 0) {
@@ -241,6 +242,14 @@ module.exports = function(grunt) {
 						tail = onFalse.tail.concat(onTrue.tail);
 
 						break ;
+					case 'include':
+						if (macros[f.name] === undefined) {
+							throw new Error("Macro " + f.name + " is undefined.");
+						}
+						
+						tail = build(macros[f.name], table, labels, reassigns, tail).tail;
+
+						break ;
 					case 'goto':
 						var next = { type: 'key', target: f.label };
 
@@ -266,24 +275,37 @@ module.exports = function(grunt) {
 				reassigns.splice(i, 1);
 			}
 
-			return output;
+			return { table: table, tail: tail, entry: entry };
+		}
+
+		function fit(opcodes) {
+
 		}
 
 		function compile(ast) {
 			var opcodes = [];
 
 			ast.forEach(function (op) {
-				if (opcodes[op.code]) {
-					throw new Error("Opcode " + op.code + " is already defined");
-				}
+				switch (op.type) {
+				case "opcode":
+					if (opcodes[op.code]) {
+						throw new Error("Opcode " + op.code + " is already defined");
+					}
 
-				opcodes[op.code] = build(op.expressions);
+					opcodes[op.code] = build(op.expressions);
+					break ;
+				case "macro":
+					macros[op.name] = op.statements;
+					break ;
+				default:
+					throw new Error("Cannot handle " + op.type);
+
+				}
 			});
 
+			var fitted = fit(opcodes);
 
-			console.log(JSON.stringify(opcodes, null, 4));
-			// TODO: FIT OPCODES
-
+			// TODO: COMPILE, RETURN BINARY
 			//return "does nothing yet";
 		}
 
