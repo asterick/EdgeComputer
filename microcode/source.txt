@@ -66,9 +66,14 @@ opcode(0x06) {
 
 // ISR
 opcode(0xFF) {
-	// TODO: PRESERVE SP
-	// TODO: PRESERVE PC
-	// TODO: LOAD SSP -> SP
-	// TODO: LOAD IRQ_VECTOR + ISR_BASE -> PC
+	MDR = MSR;  # push;
+	MDR = A4.l; # push;
+	MDR = A4.h; # push;
+
+	A4.L = swap R6; 
+	A4.L = A4.L and 255;
+	(A4.L, flags) = A4.L + IRQ_VECTOR;
+	A4.H = R6 + 0 + C;
+
 	# next_operation;
 }

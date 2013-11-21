@@ -83,7 +83,7 @@ module.exports = function(grunt) {
 					0x0008: 4,
 					0x0010: 5,
 					0x0100: 6,
-					0x0200: 7,
+					0x00FF: 7,
 					0xFFFF: 8,
 					0xFFFE: 9,
 					0xFFFD: 10,
@@ -91,7 +91,7 @@ module.exports = function(grunt) {
 					0xFFF7: 12,
 					0xFFEF: 13,
 					0xFEFF: 14,
-					0xFDFF: 15,
+					0xFF00: 15,
 				}[number];
 
 				if (floor === undefined) {

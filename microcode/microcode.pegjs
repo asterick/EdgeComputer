@@ -134,9 +134,9 @@ carry
 		{ return { type: "fixed", value: 0 }; }
 	/ "1" _
 		{ return { type: "fixed", value: 1 }; }
-	/ "c" _
+	/ "c"i _
 		{ return { type: "carry" }; }
-	/ "top" _	
+	/ "top"i _	
 		{ return { type: "top" }; }
 
 prefix
