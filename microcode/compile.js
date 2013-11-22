@@ -1,8 +1,8 @@
 'use strict';
 
 var PEG = require('pegjs'),
-		operation = require('./compile/operation.js').encode;//,
-		//encode = operation.encode;
+		operation = require('./compile/operation.js'),
+		encode = operation.encode;
 
 module.exports = function(grunt) {
 	// Please see the Grunt documentation for more information regarding task
