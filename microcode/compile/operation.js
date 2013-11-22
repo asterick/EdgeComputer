@@ -228,5 +228,5 @@ function encode(microcode) {
 
 module.exports = {
 	encode: encode,
-	NOP: encode({ type: "microcode", statements:[] })
+	nop: function () { return encode({ type: "microcode", statements:[] }) }
 };

@@ -20,6 +20,6 @@ module.exports = function(grunt) {
 
 		var output = compile(layout, ast);
 
-		//grunt.file.write(this.data.outputFile, output);
+		grunt.file.write(this.data.outputFile, output);
 	});
 };

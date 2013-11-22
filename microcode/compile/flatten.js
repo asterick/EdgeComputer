@@ -1,8 +1,6 @@
 /**
  ** Known issues:
- **   A labeled macro include that leads with a conditional will cause a failure on goto
- **   The no-op insertion should take place in the build step, not the fit step
- **		Cannot open an opcode with a conditional
+ **   A macro that leads with a conditional will cause a failure if the include is preceeded with a label
  **/
 
 var conditionCodes = { "never": 0, "ab": 1, "gt": 2, "ge": 3, "c": 4, "s": 5, "v": 6, "n": 7 };
@@ -24,8 +22,12 @@ function build(statements, table, labels, reassigns, tail) {
 	var entry = base_id;
 
 	function setStates(next, branch) {
+		// Insert NOP when nessessary
+
 		if (branch && tail.length === 0) {
-			throw new Error("Leading with a conditional or goto statement is unsupported");
+			var state = operation.nop();
+			table[base_id++] = state;
+			tail = [{ key: "next_state", target: state }];
 		}
 
 		tail.forEach(function (o) {
@@ -116,19 +118,12 @@ function fit(layout, opcodes) {
 			single = 0x100,			// Address where single instructions are safe
 			double = 0x1000;		// Address where double instructions were last written
 
+	// Zero unused space
+	for (var i = 0x100; i < double; i++) { memory[i] = new layout().$u8; }
+
 	util.range(0x100).forEach(function (i) {
 		var table = opcodes[i].table,
 				placed = {};
-
-		function getSingle(key) {
-			var id;
-			if (placed[key]) {
-				id = placed[key][0];
-			} else {
-				place(id = single++, key);
-			}
-			return id;
-		}
 
 		function breakOut(state) {
 			switch (state.type) {
@@ -137,7 +132,7 @@ function fit(layout, opcodes) {
 			case 'condition':
 			case 'state':
 				var stateId = base_id++,
-						nop = operation.encode({ type: 'microcode', statements: [] });
+						nop = operation.nop();
 
 				nop.next_state = state;
 				table[stateId] = nop;
@@ -151,6 +146,16 @@ function fit(layout, opcodes) {
 			default:
 				throw new Error("Cannot handle " + state.type);
 			}
+		}
+
+		function getSingle(key) {
+			var id;
+			if (placed[key]) {
+				id = placed[key][0];
+			} else {
+				place(id = single++, key);
+			}
+			return id;
 		}
 
 		function getDouble(whenTrue, whenFalse) {
@@ -222,7 +227,7 @@ function fit(layout, opcodes) {
 				throw new Error("Cannot handle next state type " + next.type);
 			}
 
-			if (double <= single) {
+			if (double < single) {
 				throw new Error("Allocation error: Ran out of space");
 			}
 		}
@@ -267,11 +272,16 @@ function compile(layout, ast) {
 	// Fit all the opcodes into the state table
 	var fitted = fit(layout, opcodes);
 
-	// TODO: COMPILE, RETURN BINARY
+	return fitted.map(function (code) {
+		return [code[0], code[1], code[2], code[3], code[4], code[5]]
+			.map(function (v) { return (v < 16 ? "0" : "") + (v || 0).toString(16); })
+			.join(" ");
+	}).map(function(v, i) {
+		return i.toString(16) + ": " + v;
+	}).join("\n");
 }
 
 module.exports = {
 	build: build,
 	compile: compile
 };
-
