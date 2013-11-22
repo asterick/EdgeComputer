@@ -190,4 +190,7 @@ function encode(microcode) {
 	return output;
 }
 
-module.exports = encode;
+module.exports = {
+	encode: encode,
+	NOP: encode({ type: "microcode", statements:[] })
+};
