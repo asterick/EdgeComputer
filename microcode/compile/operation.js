@@ -1,3 +1,10 @@
+/*
+ * Warning: This file is littered with magic numbers (should be resolved)
+ */
+
+var TRUE = 1,
+		FALSE = 0;
+
 function encode(microcode) {
 	var output = {};
 
