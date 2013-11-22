@@ -16,24 +16,21 @@ macro (pop) {
 	A2.l = A2.l + 1; if (@c) { A2.h = A2.h + 1; }
 }
 
-/* No op */
-opcode(0x00) {
-	// Fetch next instruction
-	# next_operation;
-}
+/* Default operation: No op */
+default { #next_operation; }
 
 opcode(0x01) {
-	priviledged, (tlb.index) = R0;
+	privileged, (tlb.index) = R0;
 	# next_operation;
 }
 
 opcode(0x02) {
-	priviledged, (tlb.bank) = R0;
+	privileged, (tlb.bank) = R0;
 	# next_operation;
 }
 
 opcode(0x03) {
-	priviledged, (tlb.flags) = R0;
+	privileged, (tlb.flags) = R0;
 	# next_operation;
 }
 

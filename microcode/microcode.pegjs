@@ -9,6 +9,8 @@ top_level
 opcode
   = "opcode"i _ "(" _ o:number _  ")" _ b:block
   	{ return { type: "opcode", code:o, expressions: b }; }
+  / "default"i _ b:block
+  	{ return { type: "default", expressions: b }; }
 
 macro
 	= "macro"i _ "(" _ name:identifier ")" _ statements:block
@@ -42,7 +44,7 @@ else
   	{ return b; }
 
 label
-	= l:identifier ":" _ &microcode
+	= l:identifier ":" _ &(microcode / include)
 		{ return { type: "label", label: l }; }
 
 goto
@@ -56,8 +58,8 @@ microcode
   	{ return { type: "microcode", statements: [] }; }
 
 expression
-	= "priviledged"i _
-		{ return { type: "flag", name: "priviledged"}; }
+	= "privileged"i _
+		{ return { type: "flag", name: "privileged"}; }
 	/ address:address "=" _ target:mdr_byte
 		{ return { type: "databus", address: address, direction: "write", target: target }; }
 	/ target:mdr_byte "=" _ address:address
