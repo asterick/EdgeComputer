@@ -1,5 +1,8 @@
 /*
- * Warning: This file is littered with magic numbers (should be resolved)
+ * WARNING: LBUS and ZBUS use magic numbers
+ * Arrangement:
+ * 		LBUS: MDR, MSR, R0, R1, R2, R3, R4, R5, A0.L, A1.L, A2.L, A3.L, A0.H, A1.H, A2.H, A3.H
+ *		ADDR: A0.L, A1.L, A2.L, A3.L, A0.H, A1.H, A2.H, A3.H
  */
 
 var TRUE = 1,
