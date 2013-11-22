@@ -5,6 +5,49 @@
 var TRUE = 1,
 		FALSE = 0;
 
+var MDR_WRITE = 0,
+		MDR_READ = 1;
+
+var MDR_ZBUS = 0,
+		MDR_DBUS = 1;
+
+var LBUS_MDR = 0,
+		LBUS_MSR = 1;
+
+var RBUS_MDR = 0,
+		RBUS_IMM = 1,
+		RBUS_FAULT = 2,
+		RBUS_IRQ = 3;
+
+var ZREG_NONE = 0,
+		ZREG_MSR = 1;
+
+var TLB_NONE = 0,
+		TLB_INDEX = 1,
+		TLB_BANK = 2,
+		TLB_FLAGS = 3;
+
+var CARRY_ZERO = 0,
+		CARRY_ONE = 1,
+		CARRY_FLAG = 2,
+		CARRY_LBUS = 3;
+
+var	ALU_ADD = 0,
+		ALU_SUB = 1,
+		ALU_AND = 2,
+		ALU_BOR = 3,
+		ALU_XOR = 4,
+		ALU_LEFT = 5,
+		ALU_RIGHT = 6,
+		ALU_SWAP = 7;
+
+var IMMEDIATES = [
+			0x0000, 0x0001, 0x0002, 0x0004, 
+			0x0008, 0x0010, 0x0100, 0x00FF, 
+			0xFFFF, 0xFFFE, 0xFFFD, 0xFFFB, 
+			0xFFF7, 0xFFEF, 0xFEFF, 0xFF00
+		];
+
 function encode(microcode) {
 	var output = {};
 
@@ -21,24 +64,24 @@ function encode(microcode) {
 	function assignTarget(target) {
 		switch (target.type) {
 			case 'address':
-				assign("latch_addr", 1); 
-				assign("z_addr", target.register - 1 + (target.word === 'high' ? 4 : 0));
+				assign("latch_addr", TRUE); 
+				assign("z_addr", target.register + (target.word === 'high' ? 4 : 0));
 				break ;
 			case 'register':
 				assign("z_reg", 1 + target.register);
 				break ;
 			case 'status':
-				assign("z_reg", 1);	// MSR
+				assign("z_reg", ZREG_MSR);	// MSR
 				break ;
 			case 'data':
-				assign("mdr_source", 0); // MDR Z-bus
-				assign("bus_direction", 1);  // Read mode
+				assign("mdr_source", MDR_ZBUS); // MDR Z-bus
+				assign("bus_direction", MDR_READ);  // Read mode
 				break ;
 			case 'flags':
-				assign("latch_flags", 1); 
+				assign("latch_flags", TRUE);
 				break ;
 			case 'tlb':
-				assign("tlb_write", { "index": 1, "bank": 2, "flags": 3 }[target.register]);
+				assign("tlb_write", { "index": TLB_INDEX, "bank": TLB_BANK, "flags": TLB_FLAGS }[target.register]);
 				break ;
 		}
 	}
@@ -46,41 +89,24 @@ function encode(microcode) {
 	function assignLBus(target) {
 		switch (target.type) {
 		case 'data':
-			assign("l_bus", 0);
+			assign("l_bus", LBUS_MDR);
 			break ;
 		case 'status':
-			assign("l_bus", 1);
+			assign("l_bus", LBUS_MSR);
 			break ;
 		case 'register':
-			assign("l_bus", 2 + target.register - 1);
+			assign("l_bus", 2 + target.register );
 			break ;
 		case 'address':
-			assign("l_bus", 8 + target.register - 1 + (target.word === 'high' ? 4 : 0));
+			assign("l_bus", 8 + target.register + (target.word === 'high' ? 4 : 0));
 			break ;
 		}
 	}
 
 	function assignImmediate(number) {
-		var floor = {
-			0x0000: 0,
-			0x0001: 1,
-			0x0002: 2,
-			0x0004: 3,
-			0x0008: 4,
-			0x0010: 5,
-			0x0100: 6,
-			0x00FF: 7,
-			0xFFFF: 8,
-			0xFFFE: 9,
-			0xFFFD: 10,
-			0xFFFB: 11,
-			0xFFF7: 12,
-			0xFFEF: 13,
-			0xFEFF: 14,
-			0xFF00: 15,
-		}[number];
+		var floor = IMMEDIATES.indexOf(number);
 
-		if (floor === undefined) {
+		if (floor < 0) {
 			throw new Error("Cannot encode constant " + number);
 		}
 
@@ -89,20 +115,20 @@ function encode(microcode) {
 
 	function assignRBus(statement) {
 		if (typeof statement === "number") {
-			assign("r_bus", 1); // Immediate mode
+			assign("r_bus", RBUS_IMM); // Immediate mode
 			assignImmediate(statement);
 			return ;
 		}
 
 		switch (statement.type) {
 			case 'data':
-				assign("r_bus", 0);
+				assign("r_bus", RBUS_DATA);
 				break ;
 			case 'fault':
-				assign("r_bus", 2);
+				assign("r_bus", RBUS_FAULT);
 				break ;
 			case 'irq':
-				assign("r_bus", 3);
+				assign("r_bus", RBUS_IRQ);
 				break ;
 		}
 	}
@@ -113,13 +139,13 @@ function encode(microcode) {
 		var v;
 		switch (statement.type) {
 			case "fixed":
-				v = statement.value;
+				v = statement.value ? CARRY_ONE : CARRY_ZERO;
 				break ;
 			case "carry":
-				v = 2;
+				v = CARRY_FLAG;
 				break ;
 			case "top":
-				v = 3;
+				v = CARRY_LBUS;
 				break ;
 		}
 		assign("alu_carry", v);
@@ -127,14 +153,14 @@ function encode(microcode) {
 
 	function assignOperator(operator) {
 		assign("alu_op", {
-			"+": 0,
-			"-": 1,
-			"and": 2,
-			"or": 3,
-			"xor": 4,
-			"left": 5,
-			"right": 6,
-			"swap": 7
+			"+": ALU_ADD,
+			"-": ALU_SUB,
+			"and": ALU_AND,
+			"or": ALU_BOR,
+			"xor": ALU_XOR,
+			"left": ALU_LEFT,
+			"right": ALU_RIGHT,
+			"swap": ALU_SWAP
 		}[operator]);
 	}
 
@@ -152,18 +178,18 @@ function encode(microcode) {
 	}
 
 	function assignBus(access) {
-		assign("mdr_source", 1);	// Bus
-		assign("tlb_disable",  access.address.absolute ? 1 : 0);
-		assign("addr_register", access.address.register - 1);
-		assign("bus_direction", access.direction === "read" ? 1 : 0);
-		assign("bus_byte", access.target.byte === "high" ? 1 : 0);
+		assign("mdr_source", MDR_DBUS);	// Bus
+		assign("tlb_disable",  access.address.absolute ? TRUE : FALSE);
+		assign("addr_register", access.address.register);
+		assign("bus_direction", access.direction === "read" ? MDR_READ : MDR_WRITE);
+		assign("bus_byte", access.target.byte === "high" ? TRUE : FALSE);
 	}
 
 	microcode.statements.forEach(function (s) {
 		switch (s.type){
 			// Instruction flags
 			case 'flag':
-				assign(s.name, 1);
+				assign(s.name, TRUE);
 				break ;
 			case 'databus':
 				assignBus(s);

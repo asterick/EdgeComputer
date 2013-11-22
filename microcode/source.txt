@@ -4,16 +4,16 @@
  */
 
 macro (next_operation) {
-	mdr.l = [A4], A4.l = A4.l + 1; if (@c) { A4.h = A4.h + 1; }
+	mdr.l = [A3], A3.l = A3.l + 1; if (@c) { A3.h = A3.h + 1; }
 }
 
 macro (push) {
-	A3.l = A3.l + 1; if (@c) { A3.h = A3.h + 1; }
-	[A4] = mdr.l;
+	A2.l = A2.l + 1; if (@c) { A2.h = A2.h + 1; }
+	[A3] = mdr.l;
 }
 macro (pop) {
-	mdr.l = [A3];
-	A3.l = A3.l + 1; if (@c) { A3.h = A3.h + 1; }
+	mdr.l = [A2];
+	A2.l = A2.l + 1; if (@c) { A2.h = A2.h + 1; }
 }
 
 /* No op */
@@ -23,17 +23,17 @@ opcode(0x00) {
 }
 
 opcode(0x01) {
-	priviledged, (tlb.index) = r1;
+	priviledged, (tlb.index) = R0;
 	# next_operation;
 }
 
 opcode(0x02) {
-	priviledged, (tlb.bank) = r1;
+	priviledged, (tlb.bank) = R0;
 	# next_operation;
 }
 
 opcode(0x03) {
-	priviledged, (tlb.flags) = r1;
+	priviledged, (tlb.flags) = R0;
 	# next_operation;
 }
 
@@ -41,22 +41,22 @@ opcode(0x03) {
 opcode(0x04) {
 	loop:
 
-	mdr.l = [A1], A1.l = A1.l + 1; if (@c) { a1.h = a1.h + 1; }
-	[A2] = mdr.h, A2.l = A2.l + 1; if (@c) { a2.h = a2.h + 1; }
+	mdr.l = [A0], A0.l = A0.l + 1; if (@c) { A0.h = A0.h + 1; }
+	[A1] = mdr.h, A1.l = A1.l + 1; if (@c) { A1.h = A1.h + 1; }
 	
 	// Decrement counter
-	(flags, r1) = r1 - 1; if (~c) { goto loop; }
+	(flags, R0) = R0 - 1; if (~c) { goto loop; }
 
 	# next_operation;
 }
 
 // Long branch on carry
 opcode(0x05) {
-	mdr.l = [A4], A4.l = A4.l + 1; if (@c) { A4.h = A4.h + 1; }
-	mdr.h = [A4], A4.l = A4.l + 1; if (@c) { A4.h = A4.h + 1; }
-	if (c) { A4.l = mdr; }
-	mdr.l = [A4], A4.l = A4.l + 1; if (@c) { A4.h = A4.h + 1; }
-	if (c) { A4.h = mdr; }
+	mdr.l = [A3], A3.l = A3.l + 1; if (@c) { A3.h = A3.h + 1; }
+	mdr.h = [A3], A3.l = A3.l + 1; if (@c) { A3.h = A3.h + 1; }
+	if (c) { A3.l = mdr; }
+	mdr.l = [A3], A3.l = A3.l + 1; if (@c) { A3.h = A3.h + 1; }
+	if (c) { A3.h = mdr; }
 	# next_operation;
 }
 
@@ -67,13 +67,13 @@ opcode(0x06) {
 // ISR
 opcode(0xFF) {
 	MDR = MSR;  # push;
-	MDR = A4.l; # push;
-	MDR = A4.h; # push;
+	MDR = A3.l; # push;
+	MDR = A3.h; # push;
 
-	A4.L = swap R6; 
-	A4.L = A4.L and 255;
-	(A4.L, flags) = A4.L + IRQ_VECTOR;
-	A4.H = R6 + 0 + C;
+	A3.L = swap R5; 
+	A3.L = A3.L and 255;
+	(A3.L, flags) = A3.L + IRQ_VECTOR;
+	A3.H = R5 + 0 + C;
 
 	# next_operation;
 }

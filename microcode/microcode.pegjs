@@ -72,11 +72,11 @@ target_list
 		{ return [v]; }
 
 z_target
-	= "a"i v:[1-4] ".h"i _
+	= "a"i v:[0-3] ".h"i _
 		{ return { type: 'address', register: parseInt(v, 10), word: "high" }; }
-	/ "a"i v:[1-4] ".l"i _
+	/ "a"i v:[0-3] ".l"i _
 		{ return { type: 'address', register: parseInt(v, 10), word: "low" }; }
-	/ "r"i v:[1-6] _
+	/ "r"i v:[0-5] _
 		{ return { type: 'register', register: parseInt(v, 10) }; }
 	/ "msr"i _
 		{ return { type: 'status' }; }
@@ -98,7 +98,7 @@ address
 		{ return { type: 'address', register: a, absolute: Boolean(absolute) }; }
 
 address_reg
-	= "a"i v:[1-4]
+	= "a"i v:[0-3]
 		{ return parseInt(v, 10); }
 
 z_bus
@@ -109,11 +109,11 @@ z_bus
 	/ l_bus
 
 l_bus
-	= "a"i v:[1-4] ".h"i _
+	= "a"i v:[0-3] ".h"i _
 		{ return { type: 'address', register: parseInt(v, 10), word: "high" }; }
-	/ "a"i v:[1-4] ".l"i _
+	/ "a"i v:[0-3] ".l"i _
 		{ return { type: 'address', register: parseInt(v, 10), word: "low" }; }
-	/ "r"i v:[1-6] _
+	/ "r"i v:[0-5] _
 		{ return { type: 'register', register: parseInt(v, 10) }; }
 	/ "msr"i _
 		{ return { type: 'status' }; }

@@ -8,8 +8,8 @@ big {
 	unsigned:3	z_reg;						// none, MSR, R1, R2, R3, R4, R5, R6
 	unsigned:3	z_addr;						// A1.L, A2.L, A3.L, A4.L, A1.H, A2.H, A3.H, A4.H
 
-	// Encode 1 hot values for MSR falgs
-	unsigned:4	immediate;				// 0, 1, 2, 4, 8, 16, 256, 512
+	// Encode 1 hot values for MSR flags (msb = invert)
+	unsigned:4	immediate;				// 0, 1, 2, 4, 8, 16, 256, 255
 
 	// Latch signals
 	unsigned:1 	latch_addr;
