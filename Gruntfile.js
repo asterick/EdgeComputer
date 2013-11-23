@@ -13,7 +13,7 @@ module.exports = function(grunt) {
 
 				layout: "microcode/layout.txt",
 				source: "microcode/source.txt",
-				outputFile: "microcode.hex"
+				output: "logisim"
 			}
 		}
 	});

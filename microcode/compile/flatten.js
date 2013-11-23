@@ -270,15 +270,7 @@ function compile(layout, ast) {
 	}
 
 	// Fit all the opcodes into the state table
-	var fitted = fit(layout, opcodes);
-
-	return fitted.map(function (code) {
-		return [code[0], code[1], code[2], code[3], code[4], code[5]]
-			.map(function (v) { return (v < 16 ? "0" : "") + (v || 0).toString(16); })
-			.join(" ");
-	}).map(function(v, i) {
-		return i.toString(16) + ": " + v;
-	}).join("\n");
+	return fit(layout, opcodes);
 }
 
 module.exports = {
