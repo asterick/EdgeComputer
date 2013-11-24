@@ -36,7 +36,7 @@ if
   	{ return { type: 'if', immediate: Boolean(immediate), invert: Boolean(invert), condition: condition, otherwise: otherwise || null, statements: statements }; }
 
 condition
-	= v:("never"i / "ab"i / "gt"i / "ge"i / "c"i / "s"i / "v"i / "n"i) _
+	= v:("never"i / "ab"i / "lt"i / "le"i / "c"i / "z"i / "n"i / "v"i) _
 		{ return v.toLowerCase(); }
 
 else

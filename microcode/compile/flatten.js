@@ -3,7 +3,7 @@
  **   A macro that leads with a conditional will cause a failure if the include is preceeded with a label
  **/
 
-var conditionCodes = { "never": 0, "ab": 1, "gt": 2, "ge": 3, "c": 4, "s": 5, "v": 6, "n": 7 };
+var conditionCodes = { "never": 0, "ab": 1, "gt": 2, "ge": 3, "c": 4, "z": 5, "n": 6, "v": 7 };
 
 var	operation = require('./operation.js'),
 		util = require("./util.js");
