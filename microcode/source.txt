@@ -1,6 +1,5 @@
 /*
- *
- *
+ * privileged
  */
 
 macro (next_operation) {
@@ -16,7 +15,7 @@ macro (pop) {
 	A2.l = A2.l + 1; if (@c) { A2.h = A2.h + 1; }
 }
 
-/* Default operation: No op */
+// Default operation: No operation
 default { #next_operation; }
 
 opcode(0x01) {
@@ -54,23 +53,5 @@ opcode(0x05) {
 	if (c) { A3.l = mdr; }
 	mdr.l = [A3], A3.l = A3.l + 1; if (@c) { A3.h = A3.h + 1; }
 	if (c) { A3.h = mdr; }
-	# next_operation;
-}
-
-opcode(0x06) {
-	msr = msr and 0;
-}
-
-// ISR
-opcode(0xFF) {
-	MDR = MSR;  # push;
-	MDR = A3.l; # push;
-	MDR = A3.h; # push;
-
-	A3.L = swap R5; 
-	A3.L = A3.L and 255;
-	(A3.L, flags) = A3.L + IRQ_VECTOR;
-	A3.H = R5 + 0 + C;
-
 	# next_operation;
 }

@@ -142,11 +142,11 @@ carry
 		{ return { type: "top" }; }
 
 prefix
-	= v:("left" / "right" / "swap") whitespace+
+	= v:("left") whitespace+
 		{ return v.toLowerCase(); }
 
 infix
-	= v:("+" / "-" / "xor" / "and" / "or") whitespace+
+	= v:("+" / "-" / "xor" / "and" / "or" / "nand" / "nor") whitespace+
 		{ return v.toLowerCase(); }
 
 

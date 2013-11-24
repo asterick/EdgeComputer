@@ -1,15 +1,6 @@
-big {
+bottom little {
 	// General flags
 	unsigned:1 	privileged;
-
-	// Bus mux
-	unsigned:4	l_bus;						// MDR, MSR, R1, R2, R3, R4, R5, R6, A1.L, A2.L, A3.L, A4.L, A1.H, A2.H, A3.H, A4.H
-	unsigned:2	r_bus;						// MDR, Immediate, FAULT_CODE, IRQ_VECTOR
-	unsigned:3	z_reg;						// none, MSR, R1, R2, R3, R4, R5, R6
-	unsigned:3	z_addr;						// A1.L, A2.L, A3.L, A4.L, A1.H, A2.H, A3.H, A4.H
-
-	// Encode 1 hot values for MSR flags (msb = invert)
-	unsigned:4	immediate;				// 0, 1, 2, 4, 8, 16, 256, 255
 
 	// Latch signals
 	unsigned:1 	latch_addr;
@@ -17,7 +8,7 @@ big {
 
 	// ALU Operation control
 	// Swap upper and lower 
-	unsigned:3	alu_op;						// a & b, a ^ b, a | b, a + b, a - b, a << 1, a >> 1, swap a
+	unsigned:3	alu_op;						// a + b, a & b, a | b, a ^ b, a - b, a & ~b, a | ~b,  a << 1
 	unsigned:2	alu_carry;				// off, on, flags, l-bus top
 
 	// Address bus control
@@ -29,6 +20,15 @@ big {
 	// TLB Control
 	unsigned:1 	tlb_disable;
 	unsigned:2 	tlb_write;				// None, Index, Flags, Bank
+
+	// Bus mux
+	unsigned:4	l_bus;						// MDR, MSR, R1, R2, R3, R4, R5, R6, A1.L, A2.L, A3.L, A4.L, A1.H, A2.H, A3.H, A4.H
+	unsigned:2	r_bus;						// MDR, Immediate, FAULT_CODE, IRQ_VECTOR
+	unsigned:3	z_reg;						// none, MSR, R1, R2, R3, R4, R5, R6
+	unsigned:3	z_addr;						// A1.L, A2.L, A3.L, A4.L, A1.H, A2.H, A3.H, A4.H
+
+	// Encode 1 hot values for MSR flags (msb = invert)
+	unsigned:4	immediate;				// 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 0, 15, 255, 4095
 
 	// Next state control
 	unsigned:1 		flags_source;		// 0 = MSR, 1 = ALU

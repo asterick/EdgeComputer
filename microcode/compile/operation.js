@@ -36,19 +36,19 @@ var CARRY_ZERO = 0,
 		CARRY_LBUS = 3;
 
 var	ALU_ADD = 0,
-		ALU_SUB = 1,
-		ALU_AND = 2,
-		ALU_BOR = 3,
-		ALU_XOR = 4,
-		ALU_LEFT = 5,
-		ALU_RIGHT = 6,
-		ALU_SWAP = 7;
+		ALU_AND = 1,
+		ALU_BOR = 2,
+		ALU_XOR = 3,
+		ALU_SUB = 4,
+		ALU_NAND = 5,
+		ALU_NOR = 6,
+		ALU_LEFT = 7;
 
 var IMMEDIATES = [
-			0x0000, 0x0001, 0x0002, 0x0004, 
-			0x0008, 0x0010, 0x0100, 0x00FF, 
-			0xFFFF, 0xFFFE, 0xFFFD, 0xFFFB, 
-			0xFFF7, 0xFFEF, 0xFEFF, 0xFF00
+			0x0001, 0x0002, 0x0004, 0x0008,
+			0x0010, 0x0020, 0x0040, 0x0080,
+			0x0100, 0x0200, 0x0400, 0x0800,
+			0x0000, 0x000F, 0x00FF, 0x0FFF
 		];
 
 function encode(microcode) {
@@ -157,13 +157,13 @@ function encode(microcode) {
 	function assignOperator(operator) {
 		assign("alu_op", {
 			"+": ALU_ADD,
-			"-": ALU_SUB,
 			"and": ALU_AND,
 			"or": ALU_BOR,
 			"xor": ALU_XOR,
-			"left": ALU_LEFT,
-			"right": ALU_RIGHT,
-			"swap": ALU_SWAP
+			"-": ALU_SUB,
+			"nand": ALU_NAND,
+			"nor": ALU_NOR,
+			"left": ALU_LEFT
 		}[operator]);
 	}
 

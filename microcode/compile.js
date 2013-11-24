@@ -4,8 +4,19 @@ var PEG = require('pegjs'),
 		flatten = require("./compile/flatten.js"),
 		compile = flatten.compile;
 
+function short(v) {
+	return new Uint16Array(v.buffer);
+}
+
 function logisim(data, i) {
-	var lines = ["v2.0 raw"];
+	var lines = ["v2.0 raw"],
+			bytes = data.map(function (v) {
+				return v[i].toString(16);
+			});
+
+	for (var i = 0; i < bytes.length; i += 8) {
+		lines.push(bytes.slice(i, i+8).join(" "));
+	}
 
 	return lines.join("\n");
 }
@@ -28,8 +39,9 @@ module.exports = function(grunt) {
 
 		switch(this.data.output) {
 			case 'logisim':
-				for (var i = 0; i < 5; i++) {
-					grunt.file.write("rom/logisim"+i+".hex",logisim(output, i));
+				var data = output.map(short);
+				for (var i = 0; i < data[0].length; i++) {
+					grunt.file.write("rom/logisim"+i+".hex",logisim(data, i));
 				}
 		}
 	});
