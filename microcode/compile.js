@@ -53,7 +53,7 @@ module.exports = function(grunt) {
 				}
 				break ;
 			case 'binary':
-				grunt.file.write("rom/microcode.bin", binary(output));
+				grunt.file.write(this.data.target, binary(output));
 				break ;
 		}
 	});

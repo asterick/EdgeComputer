@@ -1,5 +1,5 @@
 {
-  "name": "EdgeComputer",
+  "name": "edgecomputer",
   "version": "0.0.0",
   "description": "Edge Computer: 74xx + GAL Series Computer",
   "main": "compile.js",
@@ -19,6 +19,7 @@
     "pegjs": "~0.7.0",
     "grunt": "~0.4.1",
     "grunt-contrib-watch": "~0.5.3",
-    "struct.js": "git://github.com/asterick/struct.js.git"
+    "struct.js": "git://github.com/asterick/struct.js.git",
+    "grunt-contrib-connect": "~0.5.0"
   }
 }

@@ -6,13 +6,30 @@ module.exports = function(grunt) {
 				tasks: ["microcode"]
 			}
 		},
+		connect: {
+			server: {
+				options: {
+					port: 9001,
+					base: 'simulator'
+				}
+			}
+		},
 		microcode: {
-			main: {
+			logisim: {
 				grammar: "microcode/microcode.pegjs",
 				structjs: "node_modules/struct.js/grammar/struct.peg",
 
 				layout: "microcode/layout.txt",
 				source: "microcode/source.txt",
+				output: "logisim"
+			},
+			simulator: {
+				grammar: "microcode/microcode.pegjs",
+				structjs: "node_modules/struct.js/grammar/struct.peg",
+				layout: "microcode/layout.txt",
+				source: "microcode/source.txt",
+
+				target: "simulator/microcode.bin",
 				output: "binary"
 			}
 		}
@@ -20,7 +37,8 @@ module.exports = function(grunt) {
 
 	grunt.loadTasks('microcode');
 	grunt.loadNpmTasks('grunt-contrib-watch');
+	grunt.loadNpmTasks('grunt-contrib-connect');
 
 	grunt.registerTask("default", ["microcode"]);
-	grunt.registerTask("dev", ["default", "watch"]);
+	grunt.registerTask("dev", ["default", "connect", "watch"]);
 };
