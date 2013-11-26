@@ -21,6 +21,13 @@ function logisim(data, i) {
 	return lines.join("\n");
 }
 
+function binary(data) {
+	var d = data.reduce(function (acc, b) {
+		return acc.concat(b[0], b[1], b[2], b[3], b[4], b[5]);
+	}, []);
+	return new Buffer(d);
+}
+
 module.exports = function(grunt) {
 	// Please see the Grunt documentation for more information regarding task
 	// creation: http://gruntjs.com/creating-tasks
@@ -44,6 +51,10 @@ module.exports = function(grunt) {
 				for (var i = 0; i < data[0].length; i++) {
 					grunt.file.write("rom/logisim"+i+".hex",logisim(data, i));
 				}
+				break ;
+			case 'binary':
+				grunt.file.write("rom/microcode.bin", binary(output));
+				break ;
 		}
 	});
 };
