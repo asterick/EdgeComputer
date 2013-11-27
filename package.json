@@ -24,6 +24,7 @@
     "grunt-contrib-uglify": "~0.2.7",
     "browserify": "~2.35.4",
     "grunt-browserify": "~1.2.11",
-    "browserify-ejs": "0.0.2"
+    "browserify-ejs": "0.0.2",
+    "brfs": "0.0.8"
   }
 }

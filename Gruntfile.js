@@ -42,7 +42,7 @@ module.exports = function(grunt) {
 		  dist: {
 		  	options: {
 		  		debug: true,
-		  		transform: ["browserify-ejs"]
+		  		transform: ["browserify-ejs", "brfs"]
 		  	},
 		    files: {
 		      'web/edge.js': ['simulator/**/*.js']

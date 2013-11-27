@@ -1,2 +1,3 @@
-
-document.body.innerHTML = require("./templates/main.html")({title: "FUUUU"});
+require("./microcode.js").then(function (mc) {
+	console.log(mc);
+});
