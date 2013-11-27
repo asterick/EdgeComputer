@@ -2,4 +2,5 @@ parsers
 node_modules
 microcode.hex
 rom
-simulator/microcode.bin
+web/microcode.bin
+web/*.js

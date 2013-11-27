@@ -20,6 +20,10 @@
     "grunt": "~0.4.1",
     "grunt-contrib-watch": "~0.5.3",
     "struct.js": "git://github.com/asterick/struct.js.git",
-    "grunt-contrib-connect": "~0.5.0"
+    "grunt-contrib-connect": "~0.5.0",
+    "grunt-contrib-uglify": "~0.2.7",
+    "browserify": "~2.35.4",
+    "grunt-browserify": "~1.2.11",
+    "browserify-ejs": "0.0.2"
   }
 }

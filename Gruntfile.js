@@ -1,19 +1,56 @@
 module.exports = function(grunt) {
 	grunt.initConfig({
     watch: {
-			code: {
+			microcode: {
 				files: ["grammar/**/*", "microcode/**/*"],
 				tasks: ["microcode"]
+			},
+			simulator: {
+				files: ["simulator/**/*"],
+				tasks: ["browserify"]
 			}
 		},
 		connect: {
 			server: {
 				options: {
 					port: 9001,
-					base: 'simulator'
+					base: 'web'
 				}
 			}
 		},
+
+		// Simulator
+	  uglify: {
+	    options: {
+	      mangle: true,
+	      compress: {
+        	global_defs: {
+	          "DEBUG": false
+        	},
+        	dead_code: true,
+	      	warnings: false
+	      },
+	      preserveComments: 'some'
+	    },
+	    prod: {
+	      files: {
+	        'web/edge.min.js': ['web/edge.js']
+	      }
+	    }
+	  },
+		browserify: {
+		  dist: {
+		  	options: {
+		  		debug: true,
+		  		transform: ["browserify-ejs"]
+		  	},
+		    files: {
+		      'web/edge.js': ['simulator/**/*.js']
+		    }
+		  }
+		},
+
+		// Microcode builder
 		microcode: {
 			logisim: {
 				grammar: "microcode/microcode.pegjs",
@@ -29,16 +66,18 @@ module.exports = function(grunt) {
 				layout: "microcode/layout.txt",
 				source: "microcode/source.txt",
 
-				target: "simulator/microcode.bin",
+				target: "web/microcode.bin",
 				output: "binary"
 			}
 		}
 	});
 
 	grunt.loadTasks('microcode');
+	grunt.loadNpmTasks('grunt-browserify');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-contrib-connect');
+	grunt.loadNpmTasks('grunt-contrib-uglify');
 
-	grunt.registerTask("default", ["microcode"]);
+	grunt.registerTask("default", ["microcode", "browserify", "uglify"]);
 	grunt.registerTask("dev", ["default", "connect", "watch"]);
 };
