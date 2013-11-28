@@ -100,6 +100,8 @@ Processor.prototype.bus_read = function (tlb, address) {
 	// Bypass TLB
 	if (!tlb) { return this.read(address); }
 
+	var tlb_addr = 
+
 	return 0;
 }
 
@@ -109,6 +111,8 @@ Processor.prototype.bus_write = function (tlb, address, data) {
 }
 
 Processor.prototype.translate = function (address) {
+	var bank = this.tlb_bank
+
 	return address;
 }
 
