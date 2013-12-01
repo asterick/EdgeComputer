@@ -18,7 +18,7 @@ function logisim(data, i) {
 		lines.push(bytes.slice(i, i+8).join(" "));
 	}
 
-	return lines.join("\n");
+	return lines.join("\r\n");
 }
 
 function binary(data) {

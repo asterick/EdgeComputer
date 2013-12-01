@@ -153,7 +153,8 @@ function fit(layout, opcodes) {
 			if (placed[key]) {
 				id = placed[key][0];
 			} else {
-				place(id = single++, key);
+				place(id = single, key);
+				single += 1;
 			}
 			return id;
 		}
