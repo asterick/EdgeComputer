@@ -22,8 +22,8 @@ bottom little {
 	unsigned:2 	tlb_write;				// None, Index, Flags, Bank
 
 	// Bus mux
-	unsigned:4	l_bus;						// MDR, MSR, R1, R2, R3, R4, R5, R6, A1.L, A1.H, A2.L, A2.H, A3.L, A3.H, A4.L, A4.H
-	unsigned:2	r_bus;						// MDR, Immediate, FAULT_CODE, IRQ_VECTOR
+	unsigned:4	l_bus;						// MSR, MDR, R1, R2, R3, R4, R5, R6, A1.L, A1.H, A2.L, A2.H, A3.L, A3.H, A4.L, A4.H
+	unsigned:2	r_bus;						// Immediate, MDR, FAULT_CODE, IRQ_VECTOR
 	unsigned:3	z_reg;						// none, MSR, R1, R2, R3, R4, R5, R6
 	unsigned:3	z_addr;						// A1.L, A1.H, A2.L, A2.H, A3.L, A3.H, A4.L, A4.H
 
@@ -32,6 +32,6 @@ bottom little {
 
 	// Next state control
 	unsigned:1 		flags_source;		// 0 = MSR, 1 = ALU
-	unsigned:3		condition_code;	// Never, Higher, GreaterOrEqual, Greater, N, V, C, Z
+	unsigned:3		condition_code;	// Never, Always, GreaterOrEqual, Greater, N, V, C, Z
 	unsigned:12		next_state;
 }

@@ -122,5 +122,10 @@
 
 .controls {
 	display: block;
-	text-align: right;
+	text-align: left;
+}
+
+.code {
+	display: inline-block;
+	float: right;
 }

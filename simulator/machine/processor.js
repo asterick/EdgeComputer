@@ -18,8 +18,8 @@ var TLB_INDEX 		 = 0x000F,
 		TLB_BANK_INIT  = 0x2000,
 		TLB_BANK_TOP   = 0x0FFF;
 
-var REG_MDR = 0,
-		REG_MSR = 1,
+var REG_MSR = 0,
+		REG_MDR = 1,
 		REG_ADDR_OFFSET = 8;
 
 function Processor() {
@@ -57,7 +57,7 @@ function Processor() {
 				case 2: // ge
 					this.conditions[f][i] = (n === v) ? 1 : 0;
 					break ;
-				case 3: // greater
+				case 3: // gt
 					this.conditions[f][i] = (n === v && !z) ? 1 : 0;
 					break ;
 				case 4: // c
@@ -184,11 +184,11 @@ require("./microcode.js").then(function (mc) {
 
 		// Latch r-bus
 		switch (code.r_bus) {
-		case 0:
-			rbus = this.mdr;
-			break ;
 		case 1:
 			rbus = this.immediates[code.immediate];
+			break ;
+		case 0:
+			rbus = this.mdr;
 			break ;
 		case 2:
 			rbus = this.fault_code();
@@ -265,7 +265,7 @@ require("./microcode.js").then(function (mc) {
 			this.state = this.mdr_byte[0];
 		} else {
 			var cond_flags = (code.flags_source) ? alu_flags : (this.msr & MSR_FLAGS);
-			this.state = code.next_state ^ this.conditions[code.condition_code][cond_flags];
+			this.state = (code.next_state << 1) | this.conditions[code.condition_code][cond_flags];
 		}
 
 		// Configure TLB
