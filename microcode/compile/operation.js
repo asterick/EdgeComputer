@@ -17,8 +17,8 @@ var MDR_ZBUS = 0,
 var LBUS_MDR = 0,
 		LBUS_MSR = 1;
 
-var RBUS_MDR = 0,
-		RBUS_IMM = 1,
+var RBUS_IMM = 0,
+		RBUS_MDR = 1,
 		RBUS_FAULT = 2,
 		RBUS_IRQ = 3;
 
@@ -68,7 +68,7 @@ function encode(microcode) {
 		switch (target.type) {
 			case 'address':
 				assign("latch_addr", TRUE); 
-				assign("z_addr", target.register + (target.word === 'high' ? 4 : 0));
+				assign("z_addr", (target.register << 1) + (target.word === 'high' ? 1 : 0));
 				break ;
 			case 'register':
 				assign("z_reg", 1 + target.register);
@@ -101,7 +101,7 @@ function encode(microcode) {
 			assign("l_bus", 2 + target.register );
 			break ;
 		case 'address':
-			assign("l_bus", 8 + target.register + (target.word === 'high' ? 4 : 0));
+			assign("l_bus", 8 + (target.register << 1) + (target.word === 'high' ? 1 : 0));
 			break ;
 		}
 	}

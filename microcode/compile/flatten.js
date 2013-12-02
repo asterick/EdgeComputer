@@ -177,8 +177,8 @@ function fit(layout, opcodes) {
 
 			var addr = (double -= 2);
 
-			place(addr, whenTrue.name);
-			place(addr+1, whenFalse.name);
+			place(addr+1, whenTrue.name);
+			place(addr, whenFalse.name);
 
 			return addr;
 		}

@@ -8,31 +8,42 @@ var fields = document.querySelectorAll(".field[name]"),
 		forEach = Array.prototype.forEach,
 		system = null;
 
+// Holy hell this is ugly
 function disassemble(code) {
-	"latch_addr", "latch_flags", "alu_op", "alu_carry", "addr_register", "bus_direction", "bus_byte", "mdr_source", "tlb_disable", "l_bus", "r_bus", "immediate"
-
-	var out = code.privileged ? "privileged, " : "",
+	var privileged = code.privileged ? "privileged, " : "",
 			condition = ["n", "a", "ge", "gt", "c", "z", "v", "n"],
 			zlatch = [],
-			memory = null.
+			memory = "",
+			alu = "",
 			state = "state(" + (code.next_state << 1).toString(16) + ", " + (code.flags_source ? "@" : "") + condition[code.condition_code] +")";
 
-	if (latch_addr) { zlatch.push("a" + z_addr); }
-	if (code.z_reg) { zlatch.push([null, "msr", "r0", "r1", "r2", "r3", "r4", "r5"][code.z_reg]); }
-	if (code.tlb_write) { zlatch.push([null, "index", "flags", "bank"][code.tlb_write]); }
+	if (code.latch_addr) { zlatch.push(["A0.L", "A0.H", "A1.L", "A1.H", "A2.L", "A2.H", "A3.L", "A3.H"][code.z_addr]); }
+	if (code.z_reg) { zlatch.push([null, "MSR", "R0", "R1", "R2", "R3", "R4", "R5"][code.z_reg]); }
+	if (code.tlb_write) { zlatch.push([null, "TLB_INDEX", "TLB_FLAGS", "TLB_BANK"][code.tlb_write]); }
 
 	if (code.mdr_source) {
-		var mdr = code.bus_byte ? "mdr.h" : "mdr.l"
+		var mdr = code.bus_byte ? "MSR.H" : "MDR.L",
+				addr = "[" + (code.tlb_disable ? "#" : "") + "A" + code.addr_register + "]";
+		
 		if (code.bus_direction) { // <- memory
-
+			memory = mdr + " = " + addr + ", ";
 		} else { // -> memory
-
+			memory = addr + " = " + mdr + ", ";
 		}
 	} else  if (code.bus_direction) {
-		zlatch.push("mdr");
+		zlatch.push("MDR");
 	}
 
-	return out + state;
+	if (zlatch.length) {
+		var op = [" + ", " & ", " | ", " ^ ", " - ", " & ~", " | ~", " << 1"][code.alu_op],
+				l = ["MSR", "MDR", "R0", "R1", "R2", "R3", "R4", "R5", "A0.L", "A0.H", "A1.L", "A1.H", "A2.L", "A2.H", "A3.L", "A3.H"][code.l_bus],
+				r = (code.alu_op !== 7) ? [null, "MSR", "FAULT_CODE", "IRQ_VECTOR"][code.r_bus] || [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 0, 15, 255, 4095][code.immediate].toString(16) : "";
+				c = (code.alu_carry ? ["+ 0", "+ 1", "+ c", "+ top"][code.alu_carry]: "")
+
+		alu = zlatch.join(", ") + " = " + l + op + r + ", ";
+	}
+
+	return privileged + alu + memory + state;
 }
 
 function update() {

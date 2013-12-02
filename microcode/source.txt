@@ -18,6 +18,11 @@ macro (pop) {
 // Default operation: No operation
 default { #next_operation; }
 
+// Reset / ISR
+opcode(0x00) {
+	
+}
+
 opcode(0x01) {
 	privileged, (tlb.index) = R0;
 	# next_operation;

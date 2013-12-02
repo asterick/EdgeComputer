@@ -10,6 +10,8 @@
 	width: 512px;
 	height: 424px;
 
+	margin-top: 7px;
+
 	border: 1px solid #eee;
 	background: #ccc;
 }
@@ -123,9 +125,13 @@
 .controls {
 	display: block;
 	text-align: left;
+	border: 1px solid black;
+	margin-top: 10px;
 }
 
 .code {
 	display: inline-block;
 	float: right;
+	margin-top: 2px;
+	margin-right: 2px;
 }

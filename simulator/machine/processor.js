@@ -78,6 +78,17 @@ function Processor() {
 }
 
 Object.defineProperties(Processor.prototype, {
+	// Constant table for immediate lookup
+	immediates: {
+		value: new Uint16Array([
+			0x0001, 0x0002, 0x0004, 0x0008, 
+			0x0010, 0x0020, 0x0040, 0x0080, 
+			0x0100, 0x0200, 0x0400, 0x0800, 
+			0x0000, 0x000f, 0x00ff, 0x0fff
+		])
+	},
+
+	// Fast access
 	mdr: {
 		get: function() { return this.reg[REG_MDR]; },
 		set: function(v) { this.reg[REG_MDR] = v; }
@@ -87,52 +98,21 @@ Object.defineProperties(Processor.prototype, {
 		set: function(v) { this.reg[REG_MSR] = v; }
 	},
 
-
 	// These are only used for the debugger
-	a0: {
-		get: function() { return this.mar[0]; }
-	},
-	a1: {
-		get: function() { return this.mar[1]; }
-	},
-	a2: {
-		get: function() { return this.mar[2]; }
-	},
-	a3: {
-		get: function() { return this.mar[3]; }
-	},
-	r0: {
-		get: function() { return this.reg[2]; }
-	},
-	r1: {
-		get: function() { return this.reg[3]; }
-	},
-	r2: {
-		get: function() { return this.reg[4]; }
-	},
-	r3: {
-		get: function() { return this.reg[5]; }
-	},
-	r4: {
-		get: function() { return this.reg[6]; }
-	},
-	r5: {
-		get: function() { return this.reg[7]; }
-	},
-
-	// Constant table for immediate lookup
-	immediates: {
-		value: new Uint16Array([
-			0x0001, 0x0002, 0x0004, 0x0008, 
-			0x0010, 0x0020, 0x0040, 0x0080, 
-			0x0100, 0x0200, 0x0400, 0x0800, 
-			0x0000, 0x000f, 0x00ff, 0x0fff
-		])
-	}
+	a0: { get: function() { return this.mar[0]; } },
+	a1: { get: function() { return this.mar[1]; } },
+	a2: { get: function() { return this.mar[2]; } },
+	a3: { get: function() { return this.mar[3]; } },
+	r0: { get: function() { return this.reg[2]; } },
+	r1: { get: function() { return this.reg[3]; } },
+	r2: { get: function() { return this.reg[4]; } },
+	r3: { get: function() { return this.reg[5]; } },
+	r4: { get: function() { return this.reg[6]; } },
+	r5: { get: function() { return this.reg[7]; } }
 })
 
 Processor.prototype.reset = function () {
-	state = 0;
+	this.state = 0;
 }
 
 Processor.prototype.bus_read = function (code) {
@@ -175,7 +155,7 @@ require("./microcode.js").then(function (mc) {
 				alu_flags;
 			
 		// Check if we are executing a priviledged instruction
-		if (code.privileged && (!this.msr & MSR_SV)) {
+		if (code.privileged && !(this.msr & MSR_SV)) {
 			throw new Fault(Fault.PRIVILEGE_DENIED, "Privileged instruction execution");
 		}
 
@@ -184,10 +164,10 @@ require("./microcode.js").then(function (mc) {
 
 		// Latch r-bus
 		switch (code.r_bus) {
-		case 1:
+		case 0:
 			rbus = this.immediates[code.immediate];
 			break ;
-		case 0:
+		case 1:
 			rbus = this.mdr;
 			break ;
 		case 2:
@@ -262,9 +242,14 @@ require("./microcode.js").then(function (mc) {
 
 		// Calculate next state
 		if (!code.next_state) {
-			this.state = this.mdr_byte[0];
+			if (this.irq_vector()) {
+				this.state = 0;
+			} else {
+				this.state = this.mdr_byte[0];
+			}
 		} else {
 			var cond_flags = (code.flags_source) ? alu_flags : (this.msr & MSR_FLAGS);
+
 			this.state = (code.next_state << 1) | this.conditions[code.condition_code][cond_flags];
 		}
 
