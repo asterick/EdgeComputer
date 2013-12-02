@@ -8,7 +8,7 @@ bottom little {
 
 	// ALU Operation control
 	// Swap upper and lower 
-	unsigned:3	alu_op;						// a + b, a & b, a | b, a ^ b, a - b, a & ~b, a | ~b,  a << 1
+	unsigned:3	alu_op;						// a + b, a & b, a | b, a ^ b, a - b, a & ~b, a | ~b, a << 1
 	unsigned:2	alu_carry;				// off, on, flags, l-bus top
 
 	// Address bus control
