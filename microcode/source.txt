@@ -20,7 +20,8 @@ default { #next_operation; }
 
 // Reset / ISR
 opcode(0x00) {
-	
+	(flags, r0) = r0 - 0 + 1;
+	# next_operation;
 }
 
 opcode(0x01) {

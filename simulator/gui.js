@@ -38,9 +38,9 @@ function disassemble(code) {
 		var op = [" + ", " & ", " | ", " ^ ", " - ", " & ~", " | ~", " << 1"][code.alu_op],
 				l = ["MSR", "MDR", "R0", "R1", "R2", "R3", "R4", "R5", "A0.L", "A0.H", "A1.L", "A1.H", "A2.L", "A2.H", "A3.L", "A3.H"][code.l_bus],
 				r = (code.alu_op !== 7) ? [null, "MSR", "FAULT_CODE", "IRQ_VECTOR"][code.r_bus] || [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 0, 15, 255, 4095][code.immediate].toString(16) : "";
-				c = (code.alu_carry ? ["+ 0", "+ 1", "+ c", "+ top"][code.alu_carry]: "")
+				c = (code.alu_carry ? [" + 0", " + 1", " + c", " + top"][code.alu_carry]: "")
 
-		alu = zlatch.join(", ") + " = " + l + op + r + ", ";
+		alu = zlatch.join(", ") + " = " + l + op + r + c + ", ";
 	}
 
 	return privileged + alu + memory + state;

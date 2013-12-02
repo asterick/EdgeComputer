@@ -71,7 +71,7 @@ function encode(microcode) {
 				assign("z_addr", (target.register << 1) + (target.word === 'high' ? 1 : 0));
 				break ;
 			case 'register':
-				assign("z_reg", 1 + target.register);
+				assign("z_reg", 2 + target.register);
 				break ;
 			case 'status':
 				assign("z_reg", ZREG_MSR);	// MSR
@@ -98,7 +98,7 @@ function encode(microcode) {
 			assign("l_bus", LBUS_MSR);
 			break ;
 		case 'register':
-			assign("l_bus", 2 + target.register );
+			assign("l_bus", 2 + target.register);
 			break ;
 		case 'address':
 			assign("l_bus", 8 + (target.register << 1) + (target.word === 'high' ? 1 : 0));

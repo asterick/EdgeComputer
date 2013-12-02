@@ -188,6 +188,7 @@ require("./microcode.js").then(function (mc) {
 				break ;
 			case 2:
 				carry_in = this.msr & MSR_C;
+				break ;
 			case 3:
 				carry_in = (lbus & 0x8000) ? 1 : 0;
 		}
@@ -216,7 +217,15 @@ require("./microcode.js").then(function (mc) {
 				break ;
 		}
 
-		carry_out = (code.alu_op & 3) ? (lbus & 0x8000) : (zbus & 0x10000);
+		switch (code.alu_op) {
+			case 0: case 1: case 2: case 3:
+			case 7:
+				carry_out = (zbus & 0x10000);
+				break ;
+			case 4: case 5: case 6:
+				carry_out = !(zbus & 0x10000);
+				break ;
+		}
 
 		alu_flags =
 			(carry_out ? MSR_C : 0) |
