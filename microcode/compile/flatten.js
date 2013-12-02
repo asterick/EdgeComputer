@@ -3,13 +3,14 @@
  **   A macro that leads with a conditional will cause a failure if the include is preceeded with a label
  **/
 
-var conditionCodes = { "never": 0, "ab": 1, "gt": 2, "ge": 3, "c": 4, "z": 5, "n": 6, "v": 7 };
+var conditionCodes = { "never": 0, "always": 1, "gt": 2, "ge": 3, "c": 4, "z": 5, "n": 6, "v": 7 };
 
 var	operation = require('./operation.js'),
 		util = require("./util.js");
 
 // Global constants (sad face)
-var macros = {},
+var MICROCODE_ROM = 0x2000,
+		macros = {},
 		base_id = 0;
 
 // Build statement chain
@@ -115,8 +116,8 @@ function make(statements) {
 // NOTE: THIS IS A NAIVE PLACER, WILL NOT ATTEMPT TO DO TAIL OVERLAP OPTIMIZATION
 function fit(layout, opcodes) {
 	var memory = [],
-			single = 0x100,			// Address where single instructions are safe
-			double = 0x1000;		// Address where double instructions were last written
+			single = 0x100,						// Address where single instructions are safe (after instruction jump)
+			double = MICROCODE_ROM;		// Address where double instructions were last written
 
 	// Zero unused space
 	for (var i = 0x100; i < double; i++) { memory[i] = new layout().$u8; }
@@ -153,8 +154,7 @@ function fit(layout, opcodes) {
 			if (placed[key]) {
 				id = placed[key][0];
 			} else {
-				place(id = single, key);
-				single += 1;
+				place(id = single++, key);
 			}
 			return id;
 		}
@@ -211,14 +211,16 @@ function fit(layout, opcodes) {
 				break ;
 			// Simple branch, check if already placed, if not insert
 			case 'key':
-				code.next_state = getSingle(next.name);
+				var code = getSingle(next.name);
+				code.next_state = code >> 1;
+				code.condition_code = code & 1;
 				break ;
 			case 'condition':
 				next.true = breakOut(next.true);
 				next.false = breakOut(next.false);
 
 				code.next_state = 
-					getDouble(next.true, next.false);
+					getDouble(next.true, next.false) >> 1;
 
 				code.condition_code = conditionCodes[next.condition];
 				code.flags_source = next.immediate ? 1 : 0;
@@ -236,7 +238,9 @@ function fit(layout, opcodes) {
 		place(i, opcodes[i].entry);
 	});
 
-	console.log("Microcode placed:", ((double-single) / 0x1000 * 100).toFixed(2) + "%", "remaining");
+	var used = 1 - (double-single) / MICROCODE_ROM;
+
+	console.log("Microcode placed:", (used * 100).toFixed(2) + "%", "used");
 
 	return memory;
 }

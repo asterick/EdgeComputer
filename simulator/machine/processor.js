@@ -51,8 +51,8 @@ function Processor() {
 				case 0: // never
 					this.conditions[f][i] = 0;
 					break ;
-				case 1: // higher
-					this.conditions[f][i] = (c && !z) ? 1 : 0;
+				case 1: // always
+					this.conditions[f][i] = 1;
 					break ;
 				case 2: // ge
 					this.conditions[f][i] = (n === v) ? 1 : 0;
