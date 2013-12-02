@@ -211,9 +211,10 @@ function fit(layout, opcodes) {
 				break ;
 			// Simple branch, check if already placed, if not insert
 			case 'key':
-				var code = getSingle(next.name);
-				code.next_state = code >> 1;
-				code.condition_code = code & 1;
+				var target = getSingle(next.name);
+
+				code.next_state = target >> 1;
+				code.condition_code = target & 1;
 				break ;
 			case 'condition':
 				next.true = breakOut(next.true);

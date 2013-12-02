@@ -23,19 +23,7 @@ var REG_MSR = 0,
 		REG_ADDR_OFFSET = 8;
 
 function Processor() {
-	// Current machine state (0 = reset)
-	this.state = 0;
-
-	// Initalize the address bus
-	this.reg = new Uint16Array(16);
-	this.mar = new Uint32Array(this.reg.buffer, REG_ADDR_OFFSET * 2, 4);
-	this.mar_word = new Uint16Array(this.reg.buffer, REG_ADDR_OFFSET * 2, 8);
-	this.mdr_byte = new Uint8Array(this.reg.buffer, REG_MDR * 2, 2);
-
-	// TLB Circuit
-	this.tlb_index = 0;
-	this.tlb_flag = new Uint16Array(16);
-	this.tlb_bank = new Uint16Array(16);
+	this.reset();
 
 	// Create a LUT for conditions
 	this.conditions = [];
@@ -112,7 +100,19 @@ Object.defineProperties(Processor.prototype, {
 })
 
 Processor.prototype.reset = function () {
+	// Current machine state (0 = reset)
 	this.state = 0;
+
+	// Initalize the address bus
+	this.reg = new Uint16Array(16);
+	this.mar = new Uint32Array(this.reg.buffer, REG_ADDR_OFFSET * 2, 4);
+	this.mar_word = new Uint16Array(this.reg.buffer, REG_ADDR_OFFSET * 2, 8);
+	this.mdr_byte = new Uint8Array(this.reg.buffer, REG_MDR * 2, 2);
+
+	// TLB Circuit
+	this.tlb_index = 0;
+	this.tlb_flag = new Uint16Array(16);
+	this.tlb_bank = new Uint16Array(16);
 }
 
 Processor.prototype.bus_read = function (code) {
