@@ -1,6 +1,5 @@
 parsers
 node_modules
-microcode.hex
-rom
+logisim/*.hex
 web/microcode.bin
 web/*.js

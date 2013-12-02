@@ -49,7 +49,7 @@ module.exports = function(grunt) {
 			case 'logisim':
 				var data = output.map(short);
 				for (var i = 0; i < data[0].length; i++) {
-					grunt.file.write("rom/logisim"+i+".hex",logisim(data, i));
+					grunt.file.write("logisim/microcode"+i+".hex",logisim(data, i));
 				}
 				break ;
 			case 'binary':
