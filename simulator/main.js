@@ -1,6 +1,5 @@
 var System = require("./machine/system.js"),
-		template = require("./templates/main.html");
+		gui = require("./gui.js");
 
-var s = new System();
-
-document.body.innerHTML = template();
+gui.bind(new System());
+setTimeout(gui.update, 100);

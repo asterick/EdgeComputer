@@ -1,8 +1,8 @@
 var Fault = require("./fault.js");
 
 var MSR_PID 			 = 0xF000,
-		MSR_TLB 		   = 0x0100,
 		MSR_SV 			   = 0x0200,
+		MSR_TLB 		   = 0x0100,
 		MSR_IE 			   = 0x0010,
 		MSR_N	  			 = 0x0008,
 		MSR_V	  			 = 0x0004,
@@ -86,6 +86,41 @@ Object.defineProperties(Processor.prototype, {
 		get: function() { return this.reg[REG_MSR]; },
 		set: function(v) { this.reg[REG_MSR] = v; }
 	},
+
+
+	// These are only used for the debugger
+	a0: {
+		get: function() { return this.mar[0]; }
+	},
+	a1: {
+		get: function() { return this.mar[1]; }
+	},
+	a2: {
+		get: function() { return this.mar[2]; }
+	},
+	a3: {
+		get: function() { return this.mar[3]; }
+	},
+	r0: {
+		get: function() { return this.reg[2]; }
+	},
+	r1: {
+		get: function() { return this.reg[3]; }
+	},
+	r2: {
+		get: function() { return this.reg[4]; }
+	},
+	r3: {
+		get: function() { return this.reg[5]; }
+	},
+	r4: {
+		get: function() { return this.reg[6]; }
+	},
+	r5: {
+		get: function() { return this.reg[7]; }
+	},
+
+	// Constant table for immediate lookup
 	immediates: {
 		value: new Uint16Array([
 			0x0001, 0x0002, 0x0004, 0x0008, 
@@ -96,16 +131,24 @@ Object.defineProperties(Processor.prototype, {
 	}
 })
 
-Processor.prototype.bus_read = function (tlb, address) {
+Processor.prototype.reset = function () {
+	state = 0;
+}
+
+Processor.prototype.bus_read = function (code) {
+	var tlb = !code.tlb_disable && (this.msr & MSR_TLB),
+			address = this.mar[code.addr_register];
+
 	// Bypass TLB
 	if (!tlb) { return this.read(address); }
-
-	var tlb_addr = 
 
 	return 0;
 }
 
-Processor.prototype.bus_write = function (tlb, address, data) {
+Processor.prototype.bus_write = function (code, data) {
+	var tlb = !code.tlb_disable && (this.msr & MSR_TLB),
+			address = this.mar[code.addr_register];
+
 	// Bypass TLB
 	if (!tlb) { return this.write(address, data); }
 }
@@ -209,13 +252,9 @@ require("./microcode.js").then(function (mc) {
 			case 1: // Memory
 				if (code.bus_direction) { // Read
 					this.mdr_byte[code.bus_byte] = 
-						this.bus_read(
-							!code.tlb_disable && (this.msr & MSB_TLB), 
-							this.mar[code.addr_register]);
+						this.bus_read(code);
 				} else { // Write
-					this.bus_write(
-						!code.tlb_disable && (this.msr & MSB_TLB), 
-						this.mar[code.addr_register], 
+					this.bus_write(code, 
 						this.mdr_byte[code.bus_byte]);
 				}
 				break ;

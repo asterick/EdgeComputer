@@ -14,6 +14,8 @@ System.prototype.read = function (address) {
 	switch (address & 0xF80000)	{
 	case 0x000000:
 		return this.bios[address];
+	
+	// This is the currently unmapped regions of my memory map (7.5mB)
 	case 0x080000:
 	case 0x100000:
 	case 0x180000:

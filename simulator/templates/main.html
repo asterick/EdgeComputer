@@ -1,22 +1,63 @@
 <div class="main">
+	<div class="flags">
+		<div class="flag" name="C" bit="0"></div>
+		<div class="flag" name="Z" bit="1"></div>
+		<div class="flag" name="V" bit="2"></div>
+		<div class="flag" name="N" bit="3"></div>
+		<div class="flag" name="IE" bit="4"></div>
+		<div class="flag" name="TLB" bit="8"></div>
+		<div class="flag" name="SV" bit="9"></div>
+	</div>
+
 	<div class="screen">
 		<canvas width="512" height="212"></canvas>
 	</div>
 
-	<div class="registers">
-		<div class="register" name="MDR" value="0000"></div>
-		<div class="register" name="MSR" value="0000"></div>
-		<div class="register" name="R0" value="0000"></div>
-		<div class="register" name="R1" value="0000"></div>
-		<div class="register" name="R2" value="0000"></div>
-		<div class="register" name="R3" value="0000"></div>
-		<div class="register" name="R4" value="0000"></div>
-		<div class="register" name="R5" value="0000"></div>
+	<div class="sidebar">
+		<div class="registers">
+			<div class="register" name="MDR"></div>
+			<div class="register" name="MSR"></div>
+			<div class="register" name="R0"></div>
+			<div class="register" name="R1"></div>
+			<div class="register" name="R2"></div>
+			<div class="register" name="R3"></div>
+			<div class="register" name="R4"></div>
+			<div class="register" name="R5"></div>
 
 
-		<div class="register" name="A0" value="000000"></div>
-		<div class="register" name="A1" value="000000"></div>
-		<div class="register" name="A2" value="000000"></div>
-		<div class="register" name="A3" value="000000"></div>
+			<div class="register" name="A0"></div>
+			<div class="register" name="A1"></div>
+			<div class="register" name="A2"></div>
+			<div class="register" name="A3"></div>
+
+			<div class="register" name="state"></div>
+		</div>
+
+		<div class="microcode">
+			<div class="field" name="privileged"></div>
+			<div class="field" name="latch_addr"></div>
+			<div class="field" name="latch_flags"></div>
+			<div class="field" name="alu_op"></div>
+			<div class="field" name="alu_carry"></div>
+			<div class="field" name="addr_register"></div>
+			<div class="field" name="bus_direction"></div>
+			<div class="field" name="bus_byte"></div>
+			<div class="field" name="mdr_source"></div>
+			<div class="field" name="tlb_disable"></div>
+			<div class="field" name="tlb_write"></div>
+			<div class="field" name="l_bus"></div>
+			<div class="field" name="r_bus"></div>
+			<div class="field" name="z_reg"></div>
+			<div class="field" name="z_addr"></div>
+			<div class="field" name="immediate"></div>
+			<div class="field" name="flags_source"></div>
+			<div class="field" name="condition_code"></div>
+			<div class="field" name="next_state"></div>
+		</div>
+	</div>
+
+	<div class="controls">
+		<button action="reset">Reset</button>
+		<button action="step">Step</button>
 	</div>
 </div>
