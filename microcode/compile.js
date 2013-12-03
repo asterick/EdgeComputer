@@ -45,16 +45,21 @@ module.exports = function(grunt) {
 
 		var output = compile(layout, ast);
 
-		switch(this.data.output) {
-			case 'logisim':
-				var data = output.map(short);
-				for (var i = 0; i < data[0].length; i++) {
-					grunt.file.write("logisim/microcode"+i+".hex",logisim(data, i));
-				}
-				break ;
-			case 'binary':
-				grunt.file.write(this.data.target, binary(output));
-				break ;
-		}
+		var outputs = this.data.output;
+		Object.keys(outputs).forEach(function (format) {
+			var target = outputs[format];
+
+			switch(format) {
+				case 'logisim':
+					var data = output.map(short);
+					for (var i = 0; i < data[0].length; i++) {
+						grunt.file.write(target+i+".hex",logisim(data, i));
+					}
+					break ;
+				case 'binary':
+					grunt.file.write(target, binary(output));
+					break ;
+			}
+		});
 	});
 };

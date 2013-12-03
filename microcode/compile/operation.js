@@ -14,9 +14,9 @@ var MDR_WRITE = 0,
 var MDR_ZBUS = 0,
 		MDR_DBUS = 1;
 
-var LBUS_MDR = 0,
-		LBUS_MSR = 1;
-
+var LBUS_MSR = 1,
+		LBUS_MDR = 0;
+		
 var RBUS_IMM = 0,
 		RBUS_MDR = 1,
 		RBUS_FAULT = 2,
@@ -45,10 +45,10 @@ var	ALU_ADD = 0,
 		ALU_LEFT = 7;
 
 var IMMEDIATES = [
+			0x0000, 0x000F, 0x00FF, 0x0FFF,
 			0x0001, 0x0002, 0x0004, 0x0008,
 			0x0010, 0x0020, 0x0040, 0x0080,
-			0x0100, 0x0200, 0x0400, 0x0800,
-			0x0000, 0x000F, 0x00FF, 0x0FFF
+			0x0100, 0x0200, 0x0400, 0x0800
 		];
 
 function encode(microcode) {

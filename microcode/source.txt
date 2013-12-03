@@ -7,12 +7,20 @@ macro (next_operation) {
 }
 
 macro (push) {
-	A2.l = A2.l + 1; if (@c) { A2.h = A2.h + 1; }
-	[A3] = mdr.l;
+	[A2] = mdr.h, A2.l = A2.l + 1; if (@c) { A2.h = A2.h + 1; }
+	[A2] = mdr.l, A2.l = A2.l + 1; if (@c) { A2.h = A2.h + 1; }
 }
+
+macro (priv_pop) {
+	privileged,   A2.l = A2.l - 1; if (@c) { A2.h = A2.h + 1; }
+	mdr.l = [A2], A2.l = A2.l - 1; if (@c) { A2.h = A2.h + 1; }
+	mdr.h = [A2];
+}
+
 macro (pop) {
-	mdr.l = [A2];
-	A2.l = A2.l + 1; if (@c) { A2.h = A2.h + 1; }
+	              A2.l = A2.l - 1; if (@c) { A2.h = A2.h + 1; }
+	mdr.l = [A2], A2.l = A2.l - 1; if (@c) { A2.h = A2.h + 1; }
+	mdr.h = [A2];
 }
 
 // Default operation: No operation
@@ -20,44 +28,36 @@ default { #next_operation; }
 
 // Reset / ISR
 opcode(0x00) {
-	(flags, r0) = r0 - 0 + 1;
+	// Preserve PC
+	mdr = A3.L; # push;
+	mdr = A3.H; # push;
+	mdr = MSR; # push;
+
+	MSR = MSR or 0x0200; // Supervisor mode
+	A3.L = R5 and 0xFF;
+	A3.H = R5 nand 0xFF;
+	A3.L = A3.L + IRQ_VECTOR;
+
 	# next_operation;
 }
 
+// Return from interrupt
 opcode(0x01) {
-	privileged, (tlb.index) = R0;
+	#priv_pop; MSR = mdr;
+	#pop; A3.H = mdr;
+	#pop; A3.L = mdr;
+
 	# next_operation;
 }
 
+// Return
 opcode(0x02) {
-	privileged, (tlb.bank) = R0;
-	# next_operation;
-}
-
-opcode(0x03) {
-	privileged, (tlb.flags) = R0;
-	# next_operation;
-}
-
-// Fast move
-opcode(0x04) {
-	loop:
-
-	mdr.l = [A0], A0.l = A0.l + 1; if (@c) { A0.h = A0.h + 1; }
-	[A1] = mdr.h, A1.l = A1.l + 1; if (@c) { A1.h = A1.h + 1; }
-	
-	// Decrement counter
-	(flags, R0) = R0 - 1; if (~c) { goto loop; }
+	#pop; A3.H = mdr;
+	#pop; A3.L = mdr;
 
 	# next_operation;
 }
 
-// Long branch on carry
-opcode(0x05) {
-	mdr.l = [A3], A3.l = A3.l + 1; if (@c) { A3.h = A3.h + 1; }
-	mdr.h = [A3], A3.l = A3.l + 1; if (@c) { A3.h = A3.h + 1; }
-	if (c) { A3.l = mdr; }
-	mdr.l = [A3], A3.l = A3.l + 1; if (@c) { A3.h = A3.h + 1; }
-	if (c) { A3.h = mdr; }
-	# next_operation;
-}
+// Halt (Don't change contents of MDR so the opcode just wraps)
+opcode(0x03) { ; }
+

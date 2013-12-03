@@ -10,6 +10,7 @@ module.exports = function(grunt) {
 				tasks: ["browserify"]
 			}
 		},
+
 		connect: {
 			server: {
 				options: {
@@ -58,16 +59,11 @@ module.exports = function(grunt) {
 
 				layout: "microcode/layout.txt",
 				source: "microcode/source.txt",
-				output: "logisim"
-			},
-			simulator: {
-				grammar: "microcode/microcode.pegjs",
-				structjs: "node_modules/struct.js/grammar/struct.peg",
-				layout: "microcode/layout.txt",
-				source: "microcode/source.txt",
-
-				target: "web/microcode.bin",
-				output: "binary"
+				
+				output: {
+					"logisim": "logisim/rom",
+					"binary": "web/microcode.bin"
+				}
 			}
 		}
 	});

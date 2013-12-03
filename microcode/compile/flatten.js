@@ -120,7 +120,7 @@ function fit(layout, opcodes) {
 			double = MICROCODE_ROM;		// Address where double instructions were last written
 
 	// Zero unused space
-	for (var i = 0x100; i < double; i++) { memory[i] = new layout().$u8; }
+	for (var i = 0x100; i < MICROCODE_ROM; i++) { memory[i] = new layout().$u8; }
 
 	util.range(0x100).forEach(function (i) {
 		var table = opcodes[i].table,
@@ -151,11 +151,15 @@ function fit(layout, opcodes) {
 
 		function getSingle(key) {
 			var id;
+
 			if (placed[key]) {
 				id = placed[key][0];
 			} else {
-				place(id = single++, key);
+				id = single++;
+				mark(id, key);
+				place(id, key);
 			}
+
 			return id;
 		}
 
@@ -177,19 +181,24 @@ function fit(layout, opcodes) {
 
 			var addr = (double -= 2);
 
-			place(addr+1, whenTrue.name);
+			mark(addr, whenFalse.name);
+			mark(addr+1, whenTrue.name);
+
 			place(addr, whenFalse.name);
+			place(addr+1, whenTrue.name);
 
 			return addr;
+		}
+
+		function mark(address, key) {
+			// Mark address as placed
+			(placed[key] || (placed[key] = [])).push(address);
 		}
 
 		function place(address, key) {
 			var micro = table[key],
 					code = new layout(),
 					next = micro.next_state;
-
-			// Mark address as placed
-			(placed[key] || (placed[key] = [])).push(address);
 
 			// Place microcode (without state set)
 			memory[address] = code.$u8;
@@ -236,6 +245,7 @@ function fit(layout, opcodes) {
 			}
 		}
 
+		mark(i, opcodes[i].entry);
 		place(i, opcodes[i].entry);
 	});
 

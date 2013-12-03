@@ -18,8 +18,8 @@ var TLB_INDEX 		 = 0x000F,
 		TLB_BANK_INIT  = 0x2000,
 		TLB_BANK_TOP   = 0x0FFF;
 
-var REG_MSR = 0,
-		REG_MDR = 1,
+var REG_MDR = 0,
+		REG_MSR = 1,
 		REG_ADDR_OFFSET = 8;
 
 function Processor() {
@@ -69,10 +69,10 @@ Object.defineProperties(Processor.prototype, {
 	// Constant table for immediate lookup
 	immediates: {
 		value: new Uint16Array([
+			0x0000, 0x000f, 0x00ff, 0x0fff,
 			0x0001, 0x0002, 0x0004, 0x0008, 
 			0x0010, 0x0020, 0x0040, 0x0080, 
-			0x0100, 0x0200, 0x0400, 0x0800, 
-			0x0000, 0x000f, 0x00ff, 0x0fff
+			0x0100, 0x0200, 0x0400, 0x0800 
 		])
 	},
 
@@ -259,7 +259,7 @@ require("./microcode.js").then(function (mc) {
 		} else {
 			var cond_flags = (code.flags_source) ? alu_flags : (this.msr & MSR_FLAGS);
 
-			this.state = (code.next_state << 1) | this.conditions[code.condition_code][cond_flags];
+			this.state = (code.next_state << 1) | this.conditions[cond_flags][code.condition_code];
 		}
 
 		// Configure TLB
