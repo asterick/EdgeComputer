@@ -83,6 +83,9 @@ forEach.call(buttons, function (b) {
 });
 
 module.exports = {
-	bind: function (s) { system = s; },
+	bind: function (sys) {
+		sys.video.bind(document.querySelector(".screen canvas"));
+		system = sys;
+	},
 	update: update
-}
+};

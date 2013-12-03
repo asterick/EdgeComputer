@@ -1,12 +1,13 @@
 var file = require("../util/file.js"),
 		Fault = require("./fault.js"),
 		Processor = require("./processor.js"),
-		v9938 = require("./v9938.js");
+		V9938 = require("./v9938.js");
 
 function System() {
 	Processor.call(this);
 
 	this.ram = new Uint8Array(0x800000);
+	this.video = new V9938();
 }
 
 System.prototype = Object.create(Processor.prototype, { constructor: System });
