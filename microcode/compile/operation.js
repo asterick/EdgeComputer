@@ -125,7 +125,7 @@ function encode(microcode) {
 
 		switch (statement.type) {
 			case 'data':
-				assign("r_bus", RBUS_DATA);
+				assign("r_bus", RBUS_MDR);
 				break ;
 			case 'fault':
 				assign("r_bus", RBUS_FAULT);

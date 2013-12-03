@@ -1,6 +1,7 @@
 var file = require("../util/file.js"),
 		Fault = require("./fault.js"),
-		Processor = require("./processor.js");
+		Processor = require("./processor.js"),
+		v9938 = require("./v9938.js");
 
 function System() {
 	Processor.call(this);

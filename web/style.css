@@ -1,7 +1,7 @@
 .main {
 	display: block;
 	font-family: monospace;
-	width: 752px;
+	width: 766px;
 	margin: 10px auto;
 }
 
@@ -10,9 +10,9 @@
 	width: 512px;
 	height: 424px;
 
-	margin-top: 7px;
+	padding: 7px;
 
-	border: 1px solid #eee;
+	border: 1px solid black;
 	background: #ccc;
 }
 
