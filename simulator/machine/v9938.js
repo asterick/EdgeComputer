@@ -220,7 +220,7 @@ V9938.prototype._video_modes = {
 	16: { draw: V9938.prototype.G5, width: 512 },
 	20: { draw: V9938.prototype.G6, width: 512 },
 	28: { draw: V9938.prototype.G7, width: 256 },
-	 1: { draw: V9938.prototype.MC, width: 64 }
+	 1: { draw: V9938.prototype.MC, width: 64 },
 	 2: { draw: V9938.prototype.TEXT1, width: 240 },
 	10: { draw: V9938.prototype.TEXT2, width: 480 }
 };
