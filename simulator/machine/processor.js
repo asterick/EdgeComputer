@@ -1,4 +1,5 @@
-var Fault = require("./fault.js");
+var external = require("./external.js"),
+		Fault = require("./fault.js");
 
 var MSR_PID 			 = 0xF000,
 		MSR_SV 			   = 0x0200,
@@ -143,9 +144,9 @@ Processor.prototype.fault_code = function () { return 0 ; }
 Processor.prototype.irq_vector = function () { return 0 ; }
 
 
-require("./microcode.js").then(function (mc) {
+external.then(function (microcode, bios) {
 	// Setup microcode
-	Processor.prototype.microcode = mc;
+	Processor.prototype.microcode = microcode[0];
 
 	// Pending state for step instruction
 	Processor.prototype.step = function () {

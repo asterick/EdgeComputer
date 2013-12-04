@@ -1,5 +1,10 @@
-function V9938() {
+function V9938(element) {
 	this._vram = new Uint8Array(0x30000);
+
+	this._canvas = element;
+	this._ctx = element.getContext("2d");
+	this._back_buffer = this._ctx.getImageData(0,0,512,424);
+	this._pixels = new Uint32Array(this._back_buffer.data.buffer);
 
 	this.reset();
 }
@@ -18,10 +23,6 @@ V9938.prototype.reset = function () {
 	// Reset VDP
 	for (var i = 0; i < 0x3F; i++) { this._write_register(i, 0); }
 }
-
-V9938.prototype.bind = function (element) {
-	this._ctx = element.getContext("2d");
-};
 
 V9938.prototype.read = function (address) {
 	switch (address) {
@@ -107,6 +108,7 @@ V9938.prototype._write_register = function (index, data) {
 
 		this._display_mode = ((data << 1) & 0x1C) | (this._display_mode & ~0x1C);
 
+		this._setup_display();
 		break ;
 	case  1: // Mode register 1
 		this._blank_screen = data & 0x40;
@@ -118,6 +120,8 @@ V9938.prototype._write_register = function (index, data) {
 
 		this._sprite_size = data & 0x02;
 		this._sprite_enlarge = data & 0x01;
+
+		this._setup_display();
 		break ;
 	case  8: // Mode register 2
 		this._color_0 = data & 0x20;
@@ -129,6 +133,8 @@ V9938.prototype._write_register = function (index, data) {
 		this._simultaneous_mode = data & 0x30;
 		this._interlace = data & 0x08;
 		this._even_odd_screens = data & 0x04;
+
+		this._setup_display();
 		break ;
 
 	case  2: // Pattern layout table
@@ -206,18 +212,96 @@ V9938.prototype._write_register = function (index, data) {
 	}
 }
 
-// Video mode prototypes
+V9938.prototype._setup_display = function () {
+	var mode = this._video_modes[this._display_mode],
+			interlace = this._interlace,
+			height = (interlace ? 2 : 1) * (this._line_height ? 212 : 196);
+
+	if (!mode || !this._blank_screen) {
+		this._render = function () {};
+		this._canvas.style.display = "none";
+		return ;
+	}
+
+	this._render = this[mode.name];
+	this._pitch = interlace ? 1024 : 512;
+
+	// This will only look ugly when you're 
+	this._canvas.style.display = "visible";
+	this._canvas.style.height = Math.floor(424 * 424 / height) + "px";
+	this._canvas.style.width  = Math.floor(512 * 512 / mode.width) + "px";
+};
+
+V9938.prototype.flip = function () {
+	// Determine which field to use, and where to get our pattern
+	var target = this._field ? 0 : 512,
+			page = (this._even_odd_screens && this._field) ? 0 : this._pattern_layout_addr;
+
+	this._render(target, page);
+	this._ctx.putImageData(this._back_buffer, 0, 0);
+	this._field = this._interlace && !this._field;
+}
+
+V9938.prototype.GRAPHIC4 = function (target, page) {
+	var addr = this._page,
+			step = this._pitch - 256,
+			start = ;
+
+			this._palette
+	for (var y = 0; y < 212; y++, target += step) {
+		for (var x = 0; x < 256; x++) {
+			var px = this._vram[addr++];
+			this._pixels[target++] = this._palette[px >> 4];
+			this._pixels[target++] = this._palette[px & 0xF];
+		}
+	}
+
+	// TODO: SPRITE 2 mode
+};
+
+V9938.prototype.GRAPHIC6 = function (target, page) {
+	var addr = this._page,
+			step = this._pitch - 512,
+			start = ;
+
+			this._palette
+	for (var y = 0; y < 212; y++, target += step) {
+		for (var x = 0; x < 512; x++) {
+			var px = this._vram[addr++];
+			this._pixels[target++] = this._palette[px >> 4];
+			this._pixels[target++] = this._palette[px & 0xF];
+		}
+	}
+
+	// TODO: SPRITE 2 mode
+};
+
+V9938.prototype.GRAPHIC7 = function (target, page) {
+	var addr = this._page,
+			step = this._pitch - 256,
+			start = ;
+
+	for (var y = 0; y < 212; y++, target += step) {
+		for (var x = 0; x < 256; x++) {
+			this._pixels[target++] = this.G7_palette[this._vram[addr++]];
+		}
+	}
+
+	// TODO: SPRITE 2 mode
+};
+
+// Video mode definitions
 V9938.prototype._video_modes = {
-	 0: V9938.prototype.G1,
-	 4: V9938.prototype.G2,
-	 8: V9938.prototype.G3,
-	12: V9938.prototype.G4,
-	16: V9938.prototype.G5,
-	20: V9938.prototype.G6,
-	28: V9938.prototype.G7,
-	 1: V9938.prototype.MC,
-	 2: V9938.prototype.TEXT1,
-	10: V9938.prototype.TEXT2
+	 0: { name: "GRAPHIC1", width: 256 }, 	// 32x24, 8x8 patterns, 1 color index per 8 patterns
+	 4: { name: "GRAPHIC2", width: 256 }, 	// 3 8x8 pattern tables, 3 1x8 color tables, 1x name table
+	 8: { name: "GRAPHIC3", width: 256 }, 	// G2 + Sprite mode 2
+	12: { name: "GRAPHIC4", width: 256 },		// 256x192 4bpp
+	16: { name: "GRAPHIC5", width: 512 }, 	// 512x192 2bpp (sprites tiling)
+	20: { name: "GRAPHIC6", width: 512 }, 	// 512x192 4bpp
+	28: { name: "GRAPHIC7", width: 256 }, 	// 256x192 8bpp
+	 1: { name: "MULTICOLOR", width: 256 },	// 64x48 4bpp patterned 
+	 2: { name: "TEXT1", width: 240 },
+	10: { name: "TEXT2", width: 480 }
 };
 
 // Pre-calculate all our color LUTs 

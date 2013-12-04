@@ -1,5 +1,10 @@
-var System = require("./machine/system.js"),
+var external = require("./machine/external.js"),
+		System = require("./machine/system.js"),
 		gui = require("./gui.js");
 
-gui.bind(new System());
-setTimeout(gui.update, 100);
+
+external.then(function () {
+	var s = new System(gui.canvas);
+	gui.bind(s);
+	gui.update();
+});

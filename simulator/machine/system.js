@@ -1,13 +1,13 @@
-var file = require("../util/file.js"),
+var external = require("./external.js"),
 		Fault = require("./fault.js"),
 		Processor = require("./processor.js"),
 		V9938 = require("./v9938.js");
 
-function System() {
+function System(canvas) {
 	Processor.call(this);
 
 	this.ram = new Uint8Array(0x800000);
-	this.video = new V9938();
+	this.video = new V9938(canvas);
 }
 
 System.prototype = Object.create(Processor.prototype, { constructor: System });
@@ -41,9 +41,9 @@ System.prototype.read = function (address) {
 
 System.prototype.step = function () {};
 
-file.read("bios.bin").then(function (bios) {
-	System.prototype.bios = new Uint8Array(bios);
+external.then(function (microcode, bios) {
+	System.prototype.bios = new Uint8Array(bios[0]);
 	delete System.prototype.step;
-});
+})
 
 module.exports = System;
