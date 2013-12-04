@@ -20,25 +20,6 @@ module.exports = function(grunt) {
 			}
 		},
 
-		// Simulator
-	  uglify: {
-	    options: {
-	      mangle: true,
-	      compress: {
-        	global_defs: {
-	          "DEBUG": false
-        	},
-        	dead_code: true,
-	      	warnings: false
-	      },
-	      preserveComments: 'some'
-	    },
-	    prod: {
-	      files: {
-	        'web/edge.min.js': ['web/edge.js']
-	      }
-	    }
-	  },
 		browserify: {
 		  dist: {
 		  	options: {
@@ -72,8 +53,7 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-browserify');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-contrib-connect');
-	grunt.loadNpmTasks('grunt-contrib-uglify');
 
-	grunt.registerTask("default", ["microcode", "browserify", "uglify"]);
+	grunt.registerTask("default", ["microcode", "browserify"]);
 	grunt.registerTask("dev", ["default", "connect", "watch"]);
 };
