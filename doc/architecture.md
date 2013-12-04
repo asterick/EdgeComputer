@@ -21,6 +21,7 @@ Unmapped hardware (no space allocated)
 * YM3812 OPL2 audio
 	* 2 bytes mapped
 * IDE harddrive bus (single port)
+	* 16 bytes mapped (2 drives)
 
 TODO: _Removable drive?_
 
