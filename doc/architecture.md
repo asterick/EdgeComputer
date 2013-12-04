@@ -1,7 +1,7 @@
 Architecture
 ============
 
-Should describe the microcode layout here, but it's described in [layout.txt](microcode/layout.txt)
+Should describe the microcode layout here, but it's described in [layout.txt](../microcode/layout.txt)
 
 Specs
 -----
@@ -29,7 +29,7 @@ Memory map
 
 Range | Mapping
 --- | ---
-0x000000 ~ 0x07FFFF | Bios (flash)
+0x000000 ~ 0x07FFFF | BIOS (flash)
 0x080000 ~ 0x0FFFFF | Hardware space
 0x100000 ~ 0x7F0000 | Unmapped
 0x800000 ~ 0xFFFFFF | SRAM
