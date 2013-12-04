@@ -10,13 +10,13 @@ V9938.prototype.reset = function () {
 	this._color_table_addr		= 0;
 	this._sprite_attr_addr 		= 0;
 	this._sprite_pattern_addr	= 0;
+	this._display_mode 				= 0;
 
 	// Init our palette
 	this._palette = new Uint16Array(this.default_palette);
 
 	// Reset VDP
 	for (var i = 0; i < 0x3F; i++) { this._write_register(i, 0); }
-	console.log(this);
 }
 
 V9938.prototype.bind = function (element) {
@@ -68,11 +68,16 @@ V9938.prototype.write = function (address, data) {
 		}
 		break ;
 	case 3: // VDP Register Indirect
-		var reg = this._indirect_reg_increment ? this._indirect_reg++ : this._indirect_reg;
+		var reg = this._indirect_reg;
+
+		if (this._indirect_reg_increment) {
+			this._indirect_reg = (this._indirect_reg + 1) & 0x3F;
+		}
+
 		this._write_register(reg, data);
-		this._indirect_reg &= 0x3F;
 		break ;
 	}
+
 	this._write_cmd_first = false;
 }
 
@@ -99,18 +104,33 @@ V9938.prototype._write_register = function (index, data) {
 		this._digitize_mode = data & 0x40;
 		this._IE2 = data & 0x20;
 		this._IE1 = data & 0x10;
+
 		this._display_mode = ((data << 1) & 0x1C) | (this._display_mode & ~0x1C);
+
 		break ;
 	case  1: // Mode register 1
-		this._display_mode &= ~0x03;
-
 		this._blank_screen = data & 0x40;
 		this._IE0 = data & 0x20;
+
+		this._display_mode &= ~0x03;
 		this._display_mode |= (data & 0x10) ? 1 : 0;
 		this._display_mode |= (data & 0x08) ? 2 : 0;
+
 		this._sprite_size = data & 0x02;
 		this._sprite_enlarge = data & 0x01;
 		break ;
+	case  8: // Mode register 2
+		this._color_0 = data & 0x20;
+		this._sprite_disable = data & 0x02;
+		this._color_table = (data & 0x01) ? this.bw_lut : this.color_lut;
+		break ;
+	case  9: // Mode register 3
+		this._line_height = data & 0x80;
+		this._simultaneous_mode = data & 0x30;
+		this._interlace = data & 0x08;
+		this._even_odd_screens = data & 0x04;
+		break ;
+
 	case  2: // Pattern layout table
 		this._pattern_layout_addr = data << 10;
 		break ;
@@ -126,34 +146,11 @@ V9938.prototype._write_register = function (index, data) {
 	case  6: // Sprite pattern generator table
 		this._sprite_pattern_addr = (data << 11) | (this._sprite_pattern_addr & ~(0xFF << 11));
 		break ;
-	case  7: // Text / Margin color
-		this._text_color = data >> 4;
-		this._margin_color = data & 0xF;
-		break ;
-	case  8: // Mode register 2
-		this._color_0 = data & 0x20;
-		this._sprite_disable = data & 0x02;
-		this._color_table = (data & 0x01) ? this.bw_lut : this.color_lut;
-		break ;
-	case  9: // Mode register 3
-		this._line_height = data & 0x80;
-		this._simultaneous_mode = data & 0x30;
-		this._interlace = data & 0x08;
-		this._even_odd_screens = data & 0x04;
-		break ;
 	case 10: // Color table high
 		this._color_table_addr = (data << 14) | (this._color_table_addr & ~(0xFF << 14));
 		break ;
 	case 11: // Sprite attribute table high
 		this._sprite_attr_addr = (data << 15) | (this._sprite_attr_addr & ~(0xFF << 15));
-		break ;
-	case 12: // Text and background blink color
-		this._blink_text_color = data >> 4;
-		this._blink_margin_color = data & 0xF;
-		break ;
-	case 13: // Blinking period register
-		this._blink_on_period = data >> 4;
-		this._blink_off_period = data & 0xF;
 		break ;
 	case 14: // VRAM access base address
 		this._vram_address = (data << 14) | (this._vram_address & ~(0xFF << 14));
@@ -167,6 +164,18 @@ V9938.prototype._write_register = function (index, data) {
 	case 17: // Control register pointer
 		this._indirect_reg_increment = Boolean(data & 0x80);
 		this._indirect_reg = data & 0x3F;
+		break ;
+	case  7: // Text / Margin color
+		this._text_color = data >> 4;
+		this._margin_color = data & 0xF;
+		break ;
+	case 12: // Text and background blink color
+		this._blink_text_color = data >> 4;
+		this._blink_margin_color = data & 0xF;
+		break ;
+	case 13: // Blinking period register
+		this._blink_on_period = data >> 4;
+		this._blink_off_period = data & 0xF;
 		break ;
 	case 18: // Display adjust register
 		// !!! TODO !!!
@@ -197,32 +206,18 @@ V9938.prototype._write_register = function (index, data) {
 	}
 }
 
-// Render T
-V9938.prototype.TEXT1 = function () {
-	var bg = this._color_table[this._margin_color],
-			fg = this._color_table[this._text_color],
-			name = this._pattern_layout_addr;
-
-	for (var ty = 0; ty < 26; ty++) {
-		for (var tx = 0; tx < 40; tx++) {
-			var pattern = this._vram[name++];
-
-		}
-	}
-};
-
 // Video mode prototypes
 V9938.prototype._video_modes = {
-	 0: { draw: V9938.prototype.G1, width: 256 },
-	 4: { draw: V9938.prototype.G2, width: 256 },
-	 8: { draw: V9938.prototype.G3, width: 256 },
-	12: { draw: V9938.prototype.G4, width: 256 },
-	16: { draw: V9938.prototype.G5, width: 512 },
-	20: { draw: V9938.prototype.G6, width: 512 },
-	28: { draw: V9938.prototype.G7, width: 256 },
-	 1: { draw: V9938.prototype.MC, width: 64 },
-	 2: { draw: V9938.prototype.TEXT1, width: 240 },
-	10: { draw: V9938.prototype.TEXT2, width: 480 }
+	 0: V9938.prototype.G1,
+	 4: V9938.prototype.G2,
+	 8: V9938.prototype.G3,
+	12: V9938.prototype.G4,
+	16: V9938.prototype.G5,
+	20: V9938.prototype.G6,
+	28: V9938.prototype.G7,
+	 1: V9938.prototype.MC,
+	 2: V9938.prototype.TEXT1,
+	10: V9938.prototype.TEXT2
 };
 
 // Pre-calculate all our color LUTs 
