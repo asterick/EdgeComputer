@@ -1,12 +1,22 @@
 function V9938() {
-	this._ram				= new Uint8Array(0x30000);
+	this._vram = new Uint8Array(0x30000);
+
+	this.reset();
 }
 
 V9938.prototype.reset = function () {
-	this._palette		= new Uint16Array(this.default_palette);
+	// Preset all values
+	this._vram_address				= 0;
+	this._color_table_addr		= 0;
+	this._sprite_attr_addr 		= 0;
+	this._sprite_pattern_addr	= 0;
+
+	// Init our palette
+	this._palette = new Uint16Array(this.default_palette);
 
 	// Reset VDP
 	for (var i = 0; i < 0x3F; i++) { this._write_register(i, 0); }
+	console.log(this);
 }
 
 V9938.prototype.bind = function (element) {
@@ -29,8 +39,25 @@ V9938.prototype.write = function (address, data) {
 	switch (address) {
 	case 0: // VDP Ram
 		// TODO
+		break ;
 	case 1: // VDP Address / Setup
-		// TODO:
+		if (!this._write_pal_first) {
+			this._write_cmd_first = true;
+			this._write_cmd_byte = data;
+		} else {
+			this._write_cmd_first = false;
+			if (data & 0x80) {
+				// Write register
+				this._write_register(data & 0x3F, this._write_cmd_byte);
+			} else {
+				// Setup addr A0..A13
+				this._vram_address = 
+					(this._vram_address & ~0x3FFF) |
+					(this._write_cmd_byte) |
+					((data & 0x3F) << 8);
+			}
+		}
+		return ;
 	case 2: // VDP Palette data
 		if (!this._write_pal_first) {
 			this._write_pal_first = true;
@@ -41,20 +68,162 @@ V9938.prototype.write = function (address, data) {
 		}
 		break ;
 	case 3: // VDP Register Indirect
-		var addr = this._indirect_reg_increment ? this._indirect_reg++ : this._indirect_reg;
+		var reg = this._indirect_reg_increment ? this._indirect_reg++ : this._indirect_reg;
 		this._write_register(reg, data);
 		this._indirect_reg &= 0x3F;
 		break ;
 	}
+	this._write_cmd_first = false;
 }
 
 V9938.prototype._write_palette = function (data) {
-	// TODO: WRITE DATA
+	this._palette[this._palette_index++] = data;
+	this._palette_index &= 0xF;
 }
+
+V9938.prototype._register_mask = 	[
+	0x7e, 0x7b, 0x7f, 0xff, 0x3f, 0xff, 0x3f, 0xff,
+	0xfb, 0xbf, 0x07, 0x03, 0xff, 0xff, 0x07, 0x0f,
+	0x0f, 0xbf, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0x01, 0xff, 0x03, 0xff, 0x01, 0xff, 0x03,
+	0xff, 0x01, 0xff, 0x03, 0xFF, 0x7F, 0xFF
+];
 
 V9938.prototype._write_register = function (index, data) {
+	data &= this._register_mask[index] || 0xFF;
 
+	switch (index) {
+	// Core registers
+	case  0: // Mode register 0
+		this._digitize_mode = data & 0x40;
+		this._IE2 = data & 0x20;
+		this._IE1 = data & 0x10;
+		this._display_mode = ((data << 1) & 0x1C) | (this._display_mode & ~0x1C);
+		break ;
+	case  1: // Mode register 1
+		this._display_mode &= ~0x03;
+
+		this._blank_screen = data & 0x40;
+		this._IE0 = data & 0x20;
+		this._display_mode |= (data & 0x10) ? 1 : 0;
+		this._display_mode |= (data & 0x08) ? 2 : 0;
+		this._sprite_size = data & 0x02;
+		this._sprite_enlarge = data & 0x01;
+		break ;
+	case  2: // Pattern layout table
+		this._pattern_layout_addr = data << 10;
+		break ;
+	case  3: // Color table low
+		this._color_table_addr = (data << 6) | (this._color_table_addr & ~(0xFF << 6));
+		break ;
+	case  4: // Pattern generator table
+		this._pattern_generator_addr = data << 11;
+		break ;
+	case  5: // Sprite attribute table low
+		this._sprite_attr_addr = (data << 7) | (this._sprite_attr_addr & ~(0xFF << 7));
+		break ;
+	case  6: // Sprite pattern generator table
+		this._sprite_pattern_addr = (data << 11) | (this._sprite_pattern_addr & ~(0xFF << 11));
+		break ;
+	case  7: // Text / Margin color
+		this._text_color = data >> 4;
+		this._margin_color = data & 0xF;
+		break ;
+	case  8: // Mode register 2
+		this._color_0 = data & 0x20;
+		this._sprite_disable = data & 0x02;
+		this._color_table = (data & 0x01) ? this.bw_lut : this.color_lut;
+		break ;
+	case  9: // Mode register 3
+		this._line_height = data & 0x80;
+		this._simultaneous_mode = data & 0x30;
+		this._interlace = data & 0x08;
+		this._even_odd_screens = data & 0x04;
+		break ;
+	case 10: // Color table high
+		this._color_table_addr = (data << 14) | (this._color_table_addr & ~(0xFF << 14));
+		break ;
+	case 11: // Sprite attribute table high
+		this._sprite_attr_addr = (data << 15) | (this._sprite_attr_addr & ~(0xFF << 15));
+		break ;
+	case 12: // Text and background blink color
+		this._blink_text_color = data >> 4;
+		this._blink_margin_color = data & 0xF;
+		break ;
+	case 13: // Blinking period register
+		this._blink_on_period = data >> 4;
+		this._blink_off_period = data & 0xF;
+		break ;
+	case 14: // VRAM access base address
+		this._vram_address = (data << 14) | (this._vram_address & ~(0xFF << 14));
+		break ;
+	case 15: // Status register base address
+		this._status_index = data;
+		break ;
+	case 16: // Color palette address register
+		this._palette_index = data;
+		break ;
+	case 17: // Control register pointer
+		this._indirect_reg_increment = Boolean(data & 0x80);
+		this._indirect_reg = data & 0x3F;
+		break ;
+	case 18: // Display adjust register
+		// !!! TODO !!!
+		break ;
+	case 19: // Interrupt line register
+		// !!! TODO !!!
+		break ;
+	case 23: // Vertical offset register
+		// !!! TODO !!!
+		break ;
+
+	// Blitter functionality (Incomplete)
+	case 32: // Source X low register
+	case 33: // Source X high register
+	case 34: // Source Y low register 
+	case 35: // Source Y high register
+	case 36: // Destination X low register
+	case 37: // Destination X high register
+	case 38: // Destination Y low register 
+	case 39: // Destination Y high register
+	case 40: // Number of dots X low register
+	case 41: // Number of dots X high register
+	case 42: // Number of dots Y low register
+	case 43: // Number of dots Y high register
+	case 44: // Color register
+	case 45: // Argument register
+	case 46: // Command register
+	}
 }
+
+// Render T
+V9938.prototype.TEXT1 = function () {
+	var bg = this._color_table[this._margin_color],
+			fg = this._color_table[this._text_color],
+			name = this._pattern_layout_addr;
+
+	for (var ty = 0; ty < 26; ty++) {
+		for (var tx = 0; tx < 40; tx++) {
+			var pattern = this._vram[name++];
+
+		}
+	}
+};
+
+// Video mode prototypes
+V9938.prototype._video_modes = {
+	 0: { draw: V9938.prototype.G1, width: 256 },
+	 4: { draw: V9938.prototype.G2, width: 256 },
+	 8: { draw: V9938.prototype.G3, width: 256 },
+	12: { draw: V9938.prototype.G4, width: 256 },
+	16: { draw: V9938.prototype.G5, width: 512 },
+	20: { draw: V9938.prototype.G6, width: 512 },
+	28: { draw: V9938.prototype.G7, width: 256 },
+	 1: { draw: V9938.prototype.MC, width: 64 }
+	 2: { draw: V9938.prototype.TEXT1, width: 240 },
+	10: { draw: V9938.prototype.TEXT2, width: 480 }
+};
 
 // Pre-calculate all our color LUTs 
 V9938.prototype.color_lut = new Uint32Array(0x10000);

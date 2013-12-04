@@ -7,8 +7,6 @@
 
 .screen {
 	display: inline-block;
-	width: 512px;
-	height: 424px;
 
 	padding: 7px;
 
@@ -16,9 +14,16 @@
 	background: #ccc;
 }
 
-.screen canvas {
+.crop {
 	width: 512px;
 	height: 424px;
+	overflow: hidden;
+}
+
+.screen canvas {
+	width: 200%;
+	height: 100%;
+	background: black;
 }
 
 .sidebar {
