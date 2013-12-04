@@ -245,31 +245,60 @@ V9938.prototype.flip = function () {
 V9938.prototype.GRAPHIC4 = function (target, page) {
 	var addr = this._page,
 			step = this._pitch - 256,
-			start = ;
+			pal = [];
 
-			this._palette
+	for (var i = 15; i >= 0; i--) {
+		pal[i] = this._color_table[this._palette[i]];
+	}
+
 	for (var y = 0; y < 212; y++, target += step) {
 		for (var x = 0; x < 256; x++) {
 			var px = this._vram[addr++];
-			this._pixels[target++] = this._palette[px >> 4];
-			this._pixels[target++] = this._palette[px & 0xF];
+			this._pixels[target++] = pal[px >> 4];
+			this._pixels[target++] = pal[px & 0xF];
 		}
 	}
 
 	// TODO: SPRITE 2 mode
 };
 
-V9938.prototype.GRAPHIC6 = function (target, page) {
+V9938.prototype.GRAPHIC5 = function (target, page) {
 	var addr = this._page,
 			step = this._pitch - 512,
-			start = ;
+			pal = [];
 
-			this._palette
+	for (var i = 15; i >= 0; i--) {
+		pal[i] = this._color_table[this._palette[i]];
+	}
+
 	for (var y = 0; y < 212; y++, target += step) {
 		for (var x = 0; x < 512; x++) {
 			var px = this._vram[addr++];
-			this._pixels[target++] = this._palette[px >> 4];
-			this._pixels[target++] = this._palette[px & 0xF];
+			this._pixels[target++] = pal[(px >> 6) & 3];
+			this._pixels[target++] = pal[(px >> 4) & 3];
+			this._pixels[target++] = pal[(px >> 2) & 3];
+			this._pixels[target++] = pal[px & 3];
+		}
+	}
+
+	// TODO: SPRITE 2 mode w/tiling
+};
+
+
+V9938.prototype.GRAPHIC6 = function (target, page) {
+	var addr = this._page,
+			step = this._pitch - 512,
+			pal = [];
+
+	for (var i = 15; i >= 0; i--) {
+		pal[i] = this._color_table[this._palette[i]];
+	}
+
+	for (var y = 0; y < 212; y++, target += step) {
+		for (var x = 0; x < 512; x++) {
+			var px = this._vram[addr++];
+			this._pixels[target++] = pal[px >> 4];
+			this._pixels[target++] = pal[px & 0xF];
 		}
 	}
 
@@ -278,8 +307,7 @@ V9938.prototype.GRAPHIC6 = function (target, page) {
 
 V9938.prototype.GRAPHIC7 = function (target, page) {
 	var addr = this._page,
-			step = this._pitch - 256,
-			start = ;
+			step = this._pitch - 256;
 
 	for (var y = 0; y < 212; y++, target += step) {
 		for (var x = 0; x < 256; x++) {
