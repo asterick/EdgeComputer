@@ -1,9 +1,4 @@
-/**
- ** Known issues:
- **   A macro that leads with a conditional will cause a failure if the include is preceeded with a label
- **/
-
-var conditionCodes = { "never": 0, "always": 1, "gt": 2, "ge": 3, "c": 4, "z": 5, "n": 6, "v": 7 };
+var conditionCodes = { "never": 0, "hi": 1, "gt": 2, "ge": 3, "c": 4, "z": 5, "n": 6, "v": 7 };
 
 var	operation = require('./operation.js'),
 		util = require("./util.js");
@@ -222,18 +217,17 @@ function fit(layout, opcodes) {
 			case 'key':
 				var target = getSingle(next.name);
 
-				code.next_state = target >> 1;
-				code.condition_code = target & 1;
+				code.next_state = target;
 				break ;
 			case 'condition':
 				next.true = breakOut(next.true);
 				next.false = breakOut(next.false);
 
 				code.next_state = 
-					getDouble(next.true, next.false) >> 1;
+					getDouble(next.true, next.false);
 
 				code.condition_code = conditionCodes[next.condition];
-				code.flags_source = next.immediate ? 1 : 0;
+				code.cond_src = next.immediate ? 1 : 0;
 
 				break ; 
 			default:

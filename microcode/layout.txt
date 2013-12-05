@@ -1,37 +1,40 @@
+// 1 bits remaining (is that important?)
+
 bottom little {
-	// General flags
-	unsigned:1 	privileged;
+	// Flags (1 bit)
+	unsigned:1 privileged;		// Privileged state / instruction
 
-	// Latch signals
-	unsigned:1 	latch_addr;
-	unsigned:1 	latch_flags;
+	// Memory (8-bits)
+	unsigned:1 disable_tlb;		// Bypass TLB (memory)
+	unsigned:1 mem_byte;			// Low or High byte
+	unsigned:1 mem_dir;				// Read or Write
+	unsigned:3 mem_addr;			// A0-A7
+	unsigned:2 mem_addr_op;		// none, post-increment, post-decrement, ??
 
-	// ALU Operation control
-	// Swap upper and lower 
-	unsigned:3	alu_op;						// a + b, a & b, a | b, a ^ b, a - b, a & ~b, a | ~b, a << 1
-	unsigned:2	alu_carry;				// off, on, flags, l-bus top
+	// Latch targets (9 bits)
+	unsigned:1 latch_aflags;	// alu -> flags		(high priority)
+	unsigned:1 latch_zflags;	// zbus -> flags	(low priority)
+	unsigned:2 latch_tlb;			// none, index, flags, bank
+	unsigned:2 latch_zreg;		// z-bus -> bank[none, register, a.low, a.high]
+	unsigned:3 z_reg;					// bank register number
 
-	// Address bus control
-	unsigned:2	addr_register;		// A1, A2, A3, A4
-	unsigned:1 	bus_direction;		// Write, Read
-	unsigned:1 	bus_byte;					// MDR.L, MDR.H
-	unsigned:1	mdr_source;				// Z-Bus, Mem
+	// Source values (6 bits)
+	unsigned:3 l_select;			// r0-r7, a0-a7 (file selected by l_term)
+	unsigned:3 r_select;			// Register -> memory, r-bus, next_state
 
-	// TLB Control
-	unsigned:1 	tlb_disable;
-	unsigned:2 	tlb_write;				// None, Index, Flags, Bank
+	// Immediate encoder (6 bits)
+	unsigned:4 imm_bit;				// 1 << value
+	unsigned:1 imm_offset;		// imm - ~value
+	unsigned:1 imm_invert;		// value ? ~imm : imm
 
-	// Bus mux
-	unsigned:4	l_bus;						// MDR, MSR, R1, R2, R3, R4, R5, R6, A1.L, A1.H, A2.L, A2.H, A3.L, A3.H, A4.L, A4.H
-	unsigned:2	r_bus;						// Immediate, MDR, FAULT_CODE, IRQ_VECTOR
-	unsigned:3	z_reg;						// none, MSR, R1, R2, R3, R4, R5, R6
-	unsigned:3	z_addr;						// A1.L, A1.H, A2.L, A2.H, A3.L, A3.H, A4.L, A4.H
+	// ALU configuration (8 bits)
+	unsigned:1 carry;					// 0, flags
+	unsigned:3 alu_op;				// +, -, >>, >>>, <<, and, or, xor
+	unsigned:2 l_term;				// imm, l_reg, addr.l, addr.h
+	unsigned:2 r_term;				// imm, r_reg, flags, fault_code
 
-	// Encode 1 hot values for MSR flags (msb = invert)
-	unsigned:4	immediate;				// 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 0, 15, 255, 4095
-
-	// Next state control
-	unsigned:1 		flags_source;		// 0 = MSR, 1 = ALU
-	unsigned:3		condition_code;	// Never, Always, GreaterOrEqual, Greater, N, V, C, Z
-	unsigned:12		next_state;
+	// State target (17 bits)
+	unsigned:1 	cond_src;			// flags, alu
+	unsigned:3 	condition;		// never, hi, ge, gt, c, z, n, v
+	unsigned:13 next_state;		// 0 ... 8191
 }
