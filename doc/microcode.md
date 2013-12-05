@@ -11,6 +11,9 @@ The microcode is broken into 4 major categories:
 * Next State
   * cond_src, condition, next_state
 
+Current layout
+--------------
+
        Field | Width | Description
 ------------ | ----- | -----------
   privileged |     1 | 1: Will produce privileged fault if MSR.SV is not set
@@ -38,9 +41,19 @@ latch_zflags |     1 | alu result -> MSR[15:0]
    condition |     3 | never, hi, ge, gt, c, z, v, n
   next_state |    13 | 0 ... 8191
 
-Total bit size: *56* ( _7 bytes_ )
+Total bit size: **56** ( _7 bytes_ )
 
 **NOTE:** Immediates are designed to cover most of the instruction constants, not general purpose ones
+
+The compiler
+------------
+
+The compiler handles inserting opcodes into the 8Kx57 rom, currently with a very naive fitter.
+If I ever hit my instruction limit, I'll make it do tail optimization to reduce the number of
+repeated instructions required for doing things like loading the next byte.
+
+**NOTE:** It does not currently support the concept of a shifted opcode, although it is supported
+by the microcode as it stands right now.
 
 [Microcode layout](../microcode/source.txt)
 [Current source](../microcode/layout.txt)
