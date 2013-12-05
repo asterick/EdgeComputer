@@ -5,8 +5,7 @@ var	operation = require('./operation.js'),
 
 // Global constants (sad face)
 var MICROCODE_ROM 	= 0x2000,
-		MICROCODE_WORD	= 56 / 8,
-		macros = {},
+
 		base_id = 0;
 
 // Build statement chain
@@ -111,7 +110,8 @@ function make(statements) {
 
 // NOTE: THIS IS A NAIVE PLACER, WILL NOT ATTEMPT TO DO TAIL OVERLAP OPTIMIZATION
 function fit(layout, opcodes) {
-	var memory = new Uint8Array(MICROCODE_ROM * MICROCODE_WORD),
+	var MICROCODE_WORD = (new layout())._data.byteLength,
+			memory = new Uint8Array(MICROCODE_ROM * MICROCODE_WORD),
 			single = 0x100,						// Address where single instructions are safe (after instruction jump)
 			double = MICROCODE_ROM;		// Address where double instructions were last written
 

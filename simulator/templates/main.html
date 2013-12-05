@@ -29,25 +29,9 @@
 		</div>
 
 		<div class="microcode">
-			<div class="field" name="privileged"></div>
-			<div class="field" name="latch_addr"></div>
-			<div class="field" name="latch_flags"></div>
-			<div class="field" name="alu_op"></div>
-			<div class="field" name="alu_carry"></div>
-			<div class="field" name="addr_register"></div>
-			<div class="field" name="bus_direction"></div>
-			<div class="field" name="bus_byte"></div>
-			<div class="field" name="mdr_source"></div>
-			<div class="field" name="tlb_disable"></div>
-			<div class="field" name="tlb_write"></div>
-			<div class="field" name="l_bus"></div>
-			<div class="field" name="r_bus"></div>
-			<div class="field" name="z_reg"></div>
-			<div class="field" name="z_addr"></div>
-			<div class="field" name="immediate"></div>
-			<div class="field" name="flags_source"></div>
-			<div class="field" name="condition_code"></div>
-			<div class="field" name="next_state"></div>
+			<% microcode_fields.forEach(function (field) { %>
+				<div class="field" name="<%= field %>"></div>
+			<% }); %>
 		</div>
 	</div>
 

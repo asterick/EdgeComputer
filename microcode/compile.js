@@ -4,13 +4,6 @@ var PEG = require('pegjs'),
 		flatten = require("./compile/flatten.js"),
 		compile = flatten.compile;
 
-function binary(data) {
-	var d = data.reduce(function (acc, b) {
-		return acc.concat(b[0], b[1], b[2], b[3], b[4], b[5]);
-	}, []);
-	return new Buffer(d);
-}
-
 module.exports = function(grunt) {
 	// Please see the Grunt documentation for more information regarding task
 	// creation: http://gruntjs.com/creating-tasks
@@ -33,7 +26,7 @@ module.exports = function(grunt) {
 
 			switch(format) {
 				case 'binary':
-					grunt.file.write(target, output);
+					grunt.file.write(target, new Buffer(output));
 					break ;
 			}
 		});

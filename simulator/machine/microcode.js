@@ -7,7 +7,7 @@ var fs = require("fs"),
 // We are going to flatten this to plain objects, for speed
 var keys = Object.getOwnPropertyNames(Object.getPrototypeOf(new layout));
 
-module.exports = promise(function (pass, fail) {
+var mc = promise(function (pass, fail) {
 	file.read("microcode.bin").then(function (data) {
 		var states = [],
 				len = (new layout())._data.byteLength,
@@ -27,3 +27,7 @@ module.exports = promise(function (pass, fail) {
 		fail(code);
 	})
 });
+
+mc.fields = keys;
+
+module.exports = mc;

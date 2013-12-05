@@ -1,15 +1,14 @@
-// 1 bits remaining (is that important?)
-
 bottom little {
 	// Flags (1 bit)
 	unsigned:1 privileged;		// Privileged state / instruction
 
 	// Memory (8-bits)
 	unsigned:1 disable_tlb;		// Bypass TLB (memory)
+	unsigned:1 mem_active;		// 0: bus idle
 	unsigned:1 mem_byte;			// Low or High byte
 	unsigned:1 mem_dir;				// Read or Write
 	unsigned:3 mem_addr;			// A0-A7
-	unsigned:2 mem_addr_op;		// none, post-increment, post-decrement, ??
+	unsigned:2 mem_addr_op;		// none, post-increment, none, post-decrement
 
 	// Latch targets (9 bits)
 	unsigned:1 latch_aflags;	// alu -> flags		(high priority)
@@ -29,7 +28,7 @@ bottom little {
 
 	// ALU configuration (8 bits)
 	unsigned:1 carry;					// 0, flags
-	unsigned:3 alu_op;				// +, -, >>, >>>, <<, and, or, xor
+	unsigned:3 alu_op;				// or, xor, and, >>, >>>, <<, +, -
 	unsigned:2 l_term;				// imm, l_reg, addr.l, addr.h
 	unsigned:2 r_term;				// imm, r_reg, flags, fault_code
 

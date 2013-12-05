@@ -13,7 +13,7 @@ Current TODO list
 -----------------
 
 - [x] [Architecture](doc/architecture.md)
-- [x] [Microcode compiler](doc/microcode.md)
+- [-] [Microcode compiler](doc/microcode.md)
 - [ ] [Microcode source](doc/microcode.md)
 - [ ] Assembler
 - [ ] Simulator (javascript)

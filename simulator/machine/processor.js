@@ -1,3 +1,5 @@
+// NEED TO UPDATE FOR V2 MICROCODE
+
 var external = require("./external.js"),
 		Fault = require("./fault.js");
 
