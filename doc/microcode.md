@@ -2,6 +2,14 @@ Microcode
 =========
 
 The microcode is broken into 4 major categories:
+* Control flags
+  * privileged
+* 16-bit ALU
+  * latch_aflags, latch_zflags, latch_tlb, latch_zreg, z_reg, l_select, r_select, imm_bit, imm_offset, imm_invert, carry, alu_op, l_term, r_term
+* Memory bus
+  * disable_tlb, mem_active, mem_byte, mem_dir, mem_addr, mem_addr_op
+* Next State
+  * cond_src, condition, next_state
 
        Field | Width | Description
 ------------ | ----- | -----------
