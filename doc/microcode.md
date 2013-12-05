@@ -38,5 +38,9 @@ latch_zflags |     1 | alu result -> MSR[15:0]
    condition |     3 | never, hi, ge, gt, c, z, v, n
   next_state |    13 | 0 ... 8191
 
+Total bit size: *56* ( _7 bytes_ )
+
+**NOTE:** Immediates are designed to cover most of the instruction constants, not general purpose ones
+
 [Microcode layout](../microcode/source.txt)
 [Current source](../microcode/layout.txt)
