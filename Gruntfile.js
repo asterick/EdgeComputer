@@ -42,7 +42,6 @@ module.exports = function(grunt) {
 				source: "microcode/source.txt",
 				
 				output: {
-					"logisim": "logisim/rom",
 					"binary": "web/microcode.bin"
 				}
 			}

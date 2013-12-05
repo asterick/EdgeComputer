@@ -19,25 +19,13 @@
 
 	<div class="sidebar">
 		<div class="registers">
-			<div class="register" name="MDR"></div>
-			<div class="register" name="R0"></div>
-
 			<div class="register" name="MSR"></div>
-			<div class="register" name="R1"></div>
-
-			<div class="register" name="A0"></div>
-			<div class="register" name="R2"></div>
-
-			<div class="register" name="A1"></div>
-			<div class="register" name="R3"></div>
-
-			<div class="register" name="A2"></div>
-			<div class="register" name="R4"></div>
-
-			<div class="register" name="A3"></div>
-			<div class="register" name="R5"></div>
-
 			<div class="register" name="state"></div>
+
+			<% for (var i = 0; i < 8; i++) { %>
+				<div class="register" name="R<%= i %>"></div>
+				<div class="register" name="A<%= i %>"></div>
+ 			<% } %>
 		</div>
 
 		<div class="microcode">

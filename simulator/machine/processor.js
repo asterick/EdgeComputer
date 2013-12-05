@@ -19,10 +19,6 @@ var TLB_INDEX 		 = 0x000F,
 		TLB_BANK_INIT  = 0x2000,
 		TLB_BANK_TOP   = 0x0FFF;
 
-var REG_MDR = 0,
-		REG_MSR = 1,
-		REG_ADDR_OFFSET = 8;
-
 function Processor() {
 	this.reset();
 
@@ -40,8 +36,8 @@ function Processor() {
 				case 0: // never
 					this.conditions[f][i] = 0;
 					break ;
-				case 1: // always
-					this.conditions[f][i] = 1;
+				case 1: // hi
+					this.conditions[f][i] = (c && !z);
 					break ;
 				case 2: // ge
 					this.conditions[f][i] = (n === v) ? 1 : 0;
@@ -66,49 +62,9 @@ function Processor() {
 	}
 }
 
-Object.defineProperties(Processor.prototype, {
-	// Constant table for immediate lookup
-	immediates: {
-		value: new Uint16Array([
-			0x0000, 0x000f, 0x00ff, 0x0fff,
-			0x0001, 0x0002, 0x0004, 0x0008, 
-			0x0010, 0x0020, 0x0040, 0x0080, 
-			0x0100, 0x0200, 0x0400, 0x0800 
-		])
-	},
-
-	// Fast access
-	mdr: {
-		get: function() { return this.reg[REG_MDR]; },
-		set: function(v) { this.reg[REG_MDR] = v; }
-	},
-	msr: {
-		get: function() { return this.reg[REG_MSR]; },
-		set: function(v) { this.reg[REG_MSR] = v; }
-	},
-
-	// These are only used for the debugger
-	a0: { get: function() { return this.mar[0]; } },
-	a1: { get: function() { return this.mar[1]; } },
-	a2: { get: function() { return this.mar[2]; } },
-	a3: { get: function() { return this.mar[3]; } },
-	r0: { get: function() { return this.reg[2]; } },
-	r1: { get: function() { return this.reg[3]; } },
-	r2: { get: function() { return this.reg[4]; } },
-	r3: { get: function() { return this.reg[5]; } },
-	r4: { get: function() { return this.reg[6]; } },
-	r5: { get: function() { return this.reg[7]; } }
-})
-
 Processor.prototype.reset = function () {
 	// Current machine state (0 = reset)
 	this.state = 0;
-
-	// Initalize the address bus
-	this.reg = new Uint16Array(16);
-	this.mar = new Uint32Array(this.reg.buffer, REG_ADDR_OFFSET * 2, 4);
-	this.mar_word = new Uint16Array(this.reg.buffer, REG_ADDR_OFFSET * 2, 8);
-	this.mdr_byte = new Uint8Array(this.reg.buffer, REG_MDR * 2, 2);
 
 	// TLB Circuit
 	this.tlb_index = 0;
@@ -117,31 +73,15 @@ Processor.prototype.reset = function () {
 }
 
 Processor.prototype.bus_read = function (code) {
-	var tlb = !code.tlb_disable && (this.msr & MSR_TLB),
-			address = this.mar[code.addr_register];
-
-	// Bypass TLB
-	if (!tlb) { return this.read(address); }
-
 	return 0;
 }
 
 Processor.prototype.bus_write = function (code, data) {
-	var tlb = !code.tlb_disable && (this.msr & MSR_TLB),
-			address = this.mar[code.addr_register];
-
-	// Bypass TLB
-	if (!tlb) { return this.write(address, data); }
 }
 
-Processor.prototype.translate = function (address) {
-	var bank = this.tlb_bank
-
-	return address;
+Processor.prototype.fault_code = function () {
+	return 0 ;
 }
-
-Processor.prototype.fault_code = function () { return 0 ; }
-Processor.prototype.irq_vector = function () { return 0 ; }
 
 
 external.then(function (microcode, bios) {
@@ -151,141 +91,14 @@ external.then(function (microcode, bios) {
 	// Pending state for step instruction
 	Processor.prototype.step = function () {
 		var code = this.microcode[this.state],
-				lbus, rbus, zbus,
-				carry_out, carry_in,
 				alu_flags;
-			
+
 		// Check if we are executing a priviledged instruction
 		if (code.privileged && !(this.msr & MSR_SV)) {
 			throw new Fault(Fault.PRIVILEGE_DENIED, "Privileged instruction execution");
 		}
 
-		// Latch l-bus
-		lbus = this.reg[code.l_bus];
-
-		// Latch r-bus
-		switch (code.r_bus) {
-		case 0:
-			rbus = this.immediates[code.immediate];
-			break ;
-		case 1:
-			rbus = this.mdr;
-			break ;
-		case 2:
-			rbus = this.fault_code();
-			break ;
-		case 3:
-			rbus = this.irq_vector();
-			break ;
-		}
-
-		// Set carry in
-		switch (code.alu_carry) {
-			case 0:
-				carry_in = 0;
-				break ;
-			case 1:
-				carry_in = 1;
-				break ;
-			case 2:
-				carry_in = this.msr & MSR_C;
-				break ;
-			case 3:
-				carry_in = (lbus & 0x8000) ? 1 : 0;
-		}
-
-		// Execute alu
-		rbus = rbus ^ ((code.alu_op & 4) ? 0xFFFF : 0);
-
-		switch (code.alu_op) {
-			case 0: // a + b
-			case 4:
-				zbus = lbus + rbus + (carry_in ^ (code.alu_op >> 3));
-				break ;
-			case 1: // a & b
-			case 5:
-				zbus = lbus & rbus;
-				break ;
-			case 2: // a | b
-			case 6:
-				zbus = lbus | rbus;
-				break ;
-			case 3: // a ^ b
-				zbus = lbus ^ rbus;
-				break ;
-			case 7: // a << 1
-				zbus = (lbus << 1) | carry;
-				break ;
-		}
-
-		switch (code.alu_op) {
-			case 0: case 1: case 2: case 3:
-			case 7:
-				carry_out = (zbus & 0x10000);
-				break ;
-			case 4: case 5: case 6:
-				carry_out = !(zbus & 0x10000);
-				break ;
-		}
-
-		alu_flags =
-			(carry_out ? MSR_C : 0) |
-			((zbus & 0x08000) ? MSR_N : 0) |
-			((zbus & 0x0FFFF) ? 0 : MSR_Z) |
-			(((lbus ^ ~rbus) & (lbus ^ zbus) & 0x8000) ? MSR_V : 0);
-
-		// Memory access
-		switch (code.mdr_source){
-			case 0: // Z-Bus (memory bus idle)
-				if (code.bus_direction) { this.mdr = zbus; }
-				break ;
-			case 1: // Memory
-				if (code.bus_direction) { // Read
-					this.mdr_byte[code.bus_byte] = 
-						this.bus_read(code);
-				} else { // Write
-					this.bus_write(code, 
-						this.mdr_byte[code.bus_byte]);
-				}
-				break ;
-		}
-
-		// Calculate next state
-		if (!code.next_state) {
-			if (this.irq_vector()) {
-				this.state = 0;
-			} else {
-				this.state = this.mdr_byte[0];
-			}
-		} else {
-			var cond_flags = (code.flags_source) ? alu_flags : (this.msr & MSR_FLAGS);
-
-			this.state = (code.next_state << 1) | this.conditions[cond_flags][code.condition_code];
-		}
-
-		// Configure TLB
-		switch (code.tlb_write) {
-			case 1: // Index
-				this.tlb_index = zbus & TLB_INDEX;
-				break ;
-			case 2: // Bank
-				this.tlb_bank[this.tlb_index] = zbus;
-				break ;
-			case 3: // Flags
-				this.tlb_flag[this.tlb_index] = zbus;
-				break ;
-		}
-
-		// Latch registers and flags
-		if (code.latch_addr) {
-			this.mar_word[code.z_addr] = zbus;
-		}
-		if (code.z_reg) {
-			this.reg[code.z_reg] = zbus;
-		}
-		if (code.latch_flags) {
-			this.msr = (this.msr & ~MSR_FLAGS) | alu_flags;
-		}
+		// TODO: 
 	};
 });
 

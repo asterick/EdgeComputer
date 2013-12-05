@@ -56,8 +56,7 @@ goto
 		{ return { type: "goto", label: l }; }
 
 microcode
-  = // TODO!
-  / ";" _
+  = ";" _
   	{ return { type: "microcode", statements: [] }; }
 
 // atomic values
@@ -68,7 +67,7 @@ identifier
 number
   = "0x"i v:[0-9a-fA-F]+ _
 		{ return parseInt(v.join(''), 16); }
-  = "0b"i v:[01]+ _
+  / "0b"i v:[01]+ _
 		{ return parseInt(v.join(''), 2); }
 	/ "0" v:[0-7]+
 		{ return parseInt(v.join(''), 8); }
