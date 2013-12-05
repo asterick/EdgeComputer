@@ -15,10 +15,10 @@ Current TODO list
 - [x] [Architecture](doc/architecture.md)
 - [-] [Microcode compiler](doc/microcode.md)
 - [ ] [Microcode source](doc/microcode.md)
+- [-] Simulator (javascript)
 - [ ] Assembler
-- [ ] Simulator (javascript)
 - [ ] Synthesizable FPGA core
 - [ ] Schematic design
 - [ ] PCB Layout
-- [ ] Final Product
+- [ ] Machine build
 - [ ] Software stack (C compiler, OS)
