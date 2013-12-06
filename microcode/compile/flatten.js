@@ -115,11 +115,8 @@ function fit(layout, opcodes) {
 			single = 0x100,						// Address where single instructions are safe (after instruction jump)
 			double = MICROCODE_ROM;		// Address where double instructions were last written
 
-	// Zero unused space
-	for (var i = 0x100; i < MICROCODE_ROM; i++) { memory[i] = new layout().$u8; }
-
-	util.range(0x100).forEach(function (i) {
-		var table = opcodes[i].table,
+	util.each(opcodes, function (opcode, i) {
+		var table = opcode.table,
 				placed = {};
 
 		function breakOut(state) {
@@ -193,7 +190,7 @@ function fit(layout, opcodes) {
 
 		function place(address, key) {
 			var micro = table[key],
-					code = new layout(memory, MICROCODE_WORD * address),
+					code = new layout(memory.buffer, MICROCODE_WORD * address),
 					next = micro.next_state;
 
 			Object.keys(micro).forEach(function (k) {
@@ -237,8 +234,8 @@ function fit(layout, opcodes) {
 			}
 		}
 
-		mark(i, opcodes[i].entry);
-		place(i, opcodes[i].entry);
+		mark(parseInt(i,10), opcodes[i].entry);
+		place(parseInt(i,10), opcodes[i].entry);
 	});
 
 	var used = 1 - (double-single) / MICROCODE_ROM;
@@ -250,7 +247,7 @@ function fit(layout, opcodes) {
 
 function compile(layout, ast) {
 	var opcodes = [],
-			def_op = null;
+			def_op, i;
 
 	ast.forEach(function (op) {
 		switch (op.type) {
@@ -263,6 +260,9 @@ function compile(layout, ast) {
 			break ;
 		case "default":
 			def_op = make(op.expressions);
+			for (i = op.start; i <= op.end; i++) {
+				opcodes[i] || (opcodes[i] = def_op);
+			}
 			break ;
 		case "macro":
 			macros[op.name] = op.statements;
@@ -271,11 +271,6 @@ function compile(layout, ast) {
 			throw new Error("Cannot handle " + op.type);
 		}
 	});
-
-	// Default out all the operations that are undefined
-	for (var i = 0xFF; i >= 0; i--) {
-		opcodes[i] || (opcodes[i] = def_op);
-	}
 
 	// Fit all the opcodes into the state table
 	return fit(layout, opcodes);

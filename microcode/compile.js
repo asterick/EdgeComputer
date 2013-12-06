@@ -25,6 +25,7 @@ module.exports = function(grunt) {
 			var target = outputs[format];
 
 			switch(format) {
+				// TODO: Verilog output?
 				case 'binary':
 					grunt.file.write(target, new Buffer(output));
 					break ;

@@ -1,5 +1,5 @@
 /*
- * THIS IS ALL BUNK BECAUSE OF MICROCODE V2
+ * TODO: COMPLETE FOR V2 (alu, memory)
  */
 
 var TRUE = 1,
@@ -39,7 +39,14 @@ function encode(microcode) {
 	}
 
 	microcode.statements.forEach(function (s) {
-		// TODO: MICROCODE COMPILE
+		switch (s.type) {
+			case 'flag':
+				output[s.name] = TRUE;
+				break;
+			default:
+				console.error("UNHANDLED: ", s);
+				break ;
+		}
 	});
 
 	return output;

@@ -1,1 +1,2 @@
-default { ; }
+opcode(0) { privileged; }
+//default (0, 0xFF) { ; }

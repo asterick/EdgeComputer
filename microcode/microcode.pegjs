@@ -13,8 +13,8 @@ top_level
 opcode
   = "opcode"i _ "(" _ o:number _  ")" _ b:block
   	{ return { type: "opcode", code:o, expressions: b }; }
-  / "default"i _ b:block
-  	{ return { type: "default", expressions: b }; }
+  / "default"i _ "(" _ s:number "," _ e:number ")" _ b:block
+  	{ return { type: "default", start:s, end: e, expressions: b }; }
 
 macro
 	= "macro"i _ "(" _ name:identifier ")" _ statements:block
@@ -56,8 +56,20 @@ goto
 		{ return { type: "goto", label: l }; }
 
 microcode
-  = ";" _
+  = e:expression t:("," _ e:expression { return e; })*
+    { return { type: "microcode", statements: [e].concat(t) }; }
+  / ";" _
   	{ return { type: "microcode", statements: [] }; }
+
+expression
+  = v:flag
+    { return { type: "flag", name: v } }
+    // TODO: MEMORY
+    // TODO: ALU
+
+flag
+  = v:("privileged"i) _
+    { return v; }
 
 // atomic values
 identifier

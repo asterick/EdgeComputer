@@ -11,8 +11,6 @@ var fields = document.querySelectorAll(".field[name]"),
 		system = null;
 
 
-console.log(require("./machine/microcode.js").fields);
-
 function immediate(code) {
 	var value = 1 << code.imm_bit
 

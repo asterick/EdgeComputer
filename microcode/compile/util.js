@@ -1,3 +1,13 @@
+function each(o, c) {
+	if (Array.isArray(o)) {
+		o.forEach(c);
+	} else {
+		Object.keys(o).forEach(function (k) {
+			c(o[k], k, o);
+		});
+	}
+}
+
 function range(a, b, s) {
 	if (b === undefined) {
 		b = a;
@@ -11,5 +21,6 @@ function range(a, b, s) {
 }
 
 module.exports = {
-	range: range
+	range: range,
+	each: each
 };
