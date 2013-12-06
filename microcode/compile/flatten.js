@@ -163,6 +163,12 @@ function fit(layout, opcodes) {
 				address = start;
 			}
 		});
+
+		if (address === undefined) {
+			throw new Error("Could not allocate " + count + " instruction words");
+		}
+
+		return address;
 	}
 
 	// Allocate opcodes from state machine
