@@ -1,16 +1,34 @@
-var conditionCodes = { "never": 0, "hi": 1, "gt": 2, "ge": 3, "c": 4, "z": 5, "n": 6, "v": 7 };
+/**
+ ** This is our fitter / conditional mapper
+ ** Should be revamped for tail optimzation
+ **/
 
 var	make = require("./builder.js"),
 		util = require("./util.js");
 
-// Global constants (sad face)
-var MICROCODE_ROM 	= 0x2000;
-
-// NOTE: THIS IS A NAIVE PLACER, WILL NOT ATTEMPT TO DO TAIL OVERLAP OPTIMIZATION
 function fit(layout, opcodes) {
-	var MICROCODE_WORD = (new layout())._data.byteLength,
-			memory = new Uint8Array(MICROCODE_ROM * MICROCODE_WORD),
+	// Compiler constants
+	var MICROCODE_ROM 	= 0x2000,
+			MICROCODE_WORD = (new layout())._data.byteLength,
+			CONDITION_CODES = { "never": 0, "hi": 1, "gt": 2, "ge": 3, "c": 4, "z": 5, "n": 6, "v": 7 };;
+
+	// Allocation and output variables
+	var memory = new Uint8Array(MICROCODE_ROM * MICROCODE_WORD),
 			available = { 0: MICROCODE_ROM };
+
+	function trim_contents(size, start, address, count) {
+		// Clear from previous part of heap
+		delete available[start];
+
+		var a_start = start, 
+				a_count = address - start,
+				b_start = address + count, 
+				b_count = size - (address - start + count);
+
+		// Insert new bits into the heap
+		if (a_count) { available[a_start] = a_count; }
+		if (b_count) { available[b_start] = b_count; }
+	}
 
 	function clear(address, count) {
 		var deleted = false;
@@ -24,18 +42,8 @@ function fit(layout, opcodes) {
 				return ;
 			}
 
-			// Clear from previous part of heap
-			delete available[start];
+			trim_contents(size, start, address, count);
 			deleted = true;
-
-			var a_start = start, 
-					a_count = address - start,
-					b_start = address + count, 
-					b_count = size - (address - start + count);
-
-			// Insert new bits into the heap
-			if (a_count) { available[a_start] = a_count; }
-			if (b_count) { available[b_start] = b_count; }
 		});
 
 		if (!deleted) { throw new Error("Could not allocate " + count + " instruction words"); }
@@ -53,8 +61,8 @@ function fit(layout, opcodes) {
 					offset = delta ? (count - delta) : 0;
 
 			if (size - offset >= count) {
-				clear(start + offset, count);
-				address = start;
+				address = start + offset;
+				trim_contents(size, start, address, count);
 			}
 		});
 
@@ -152,7 +160,7 @@ function fit(layout, opcodes) {
 				code.next_state = 
 					getDouble(next.true, next.false);
 
-				code.condition_code = conditionCodes[next.condition];
+				code.condition_code = CONDITION_CODES[next.condition];
 				code.cond_src = next.immediate ? 1 : 0;
 
 				break ; 

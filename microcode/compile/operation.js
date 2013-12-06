@@ -1,5 +1,5 @@
 /*
- * TODO: COMPLETE FOR V2 (alu, memory)
+ * This flattens all the non-conditional fields of an operation
  */
 
 var TRUE = 1,

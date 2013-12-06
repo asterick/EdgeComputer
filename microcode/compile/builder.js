@@ -1,3 +1,7 @@
+/**
+ ** This generates a fittable state mapping
+ **/
+
 var util = require("./util.js"),
 		operation = require('./operation.js'),
 		base_id = 0;
