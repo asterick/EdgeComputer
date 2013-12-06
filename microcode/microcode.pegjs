@@ -13,7 +13,7 @@ opcode
   	{ return { type: "default", start:s, end: e, expressions: b }; }
 
 macro
-	= "macro"i _ "(" _ name:identifier ")" _ statements:block
+	= "macro"i _ name:identifier statements:block
 		{ return { type: "macro", name: name, statements: statements }; }
 
 block

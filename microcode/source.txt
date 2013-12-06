@@ -1,2 +1,5 @@
+
+macro next_instruction { ; }
+
 opcode(0) { privileged, r3.h = #[a7], r3 = a0.h + r0 + c; }
-//default (0, 0xFF) { ; }
+default (0, 0xFF) { # next_instruction; }
