@@ -10,6 +10,8 @@
 var external = require("./external.js"),
 		Fault = require("./fault.js");
 
+var MICROCODE_SIZE = 0x1FFF;
+
 var MSR_PID 			 = 12,
 		MSR_PID_MASK	 = 0xF,
 		MSR_SV 			   = 0x0200,
@@ -29,11 +31,15 @@ var TLB_INDEX 		 = 0x000F,
 		TLB_BANK_INIT  = 0x2000,
 		TLB_BANK_TOP   = 0x0FFF;
 
-var REG_PITCH			 = 4,
+var // 32-bit
 		WIDE_PITCH		 = 2,
+		WIDE_ADDRESS	 = 0,
+		// 16-bit
+		REG_PITCH			 = 4,
 		BANK_ADDR_L		 = 0,
 		BANK_ADDR_H    = 1,
 		BANK_REG			 = 2,
+		// 8-bit
 		BYTE_LOW			 = 0,
 		BYTE_HIGH			 = 1,
 		BANK_REG_BYTE  = 4,
@@ -197,7 +203,7 @@ Object.defineProperties(Processor.prototype, {
 });
 
 Processor.prototype.bus_read = function (code) {
-	return 0;
+	return 0xCD;
 }
 
 Processor.prototype.bus_write = function (code, data) {
@@ -317,28 +323,28 @@ Processor.prototype.step = function () {
 
 		this.state = code.next_state ^ this.conditions[flags][code.condition];
 	} else {
-		this.state = this.registers[REG_PITCH*code.r_select+BANK_REG];
+		this.state = this.registers[REG_PITCH*code.r_select+BANK_REG] & MICROCODE_SIZE;
 	}
 
 	// --- MEMORY BUS ACCESS ------
 
 	if (code.mem_active) {
-		var addr = BYTE_PITCH*code.r_select+BANK_REG_BYTE;
+		var addr = BYTE_PITCH*code.r_select+BANK_REG_BYTE + (code.mem_byte ? BYTE_HIGH : BYTE_LOW);
 
 		// BUS IS OPERATING
 		if (code.mem_dir) { // write
 			this.bus_write(code.disable_tlb, this.wide_regs[WIDE_PITCH*code.mem_addr], this.byte_registers[addr]);
 		} else { // read
-			this.byte_registers[addr] = this.bus_read(code.disable_tlb, this.wide_regs[WIDE_PITCH*code.mem_addr])
+			this.byte_registers[addr] = this.bus_read(code.disable_tlb, this.wide_regs[WIDE_PITCH*code.mem_addr]);
 		}
 	}
 
 	switch (code.mem_addr_op) {
 	case 1: // increment
-		this.wide_regs[WIDE_PITCH*code.mem_addr]++;
+		this.wide_regs[WIDE_PITCH*code.mem_addr+WIDE_ADDRESS]++;
 		break ;
 	case 3: // decrement
-		this.wide_regs[WIDE_PITCH*code.mem_addr]--;
+		this.wide_regs[WIDE_PITCH*code.mem_addr+WIDE_ADDRESS]--;
 		break ;
 	}
 

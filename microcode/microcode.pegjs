@@ -7,7 +7,7 @@ top_level
 	/ macro
 
 opcode
-  = "opcode"i _ "(" _ o:number _  ")" _ b:block
+  = "state"i _ "(" _ o:number _  ")" _ b:block
   	{ return { type: "opcode", code:o, expressions: b }; }
   / "default"i _ "(" _ s:number "," _ e:number ")" _ b:block
   	{ return { type: "default", start:s, end: e, expressions: b }; }
@@ -76,6 +76,8 @@ flag
 next
   = "next"i _ "(" _ r:register ")" _
     { return { type: 'next', register: r }; }
+  / "next"i _ "(" _ n:number ")" _
+    { return { type: 'next', state: n }; }
 
 access
   = r:register_byte "=" _ m:memory

@@ -198,8 +198,14 @@ function encode(microcode) {
 	}
 
 	function assignNext(code) {
-		assign("r_select", code.register.index);
-		output.next_state = { type: 'state', index: 0 };
+		if (code.register) {
+			// We are branching to an index
+			assign("r_select", code.register.index);
+			output.next_state = { type: 'state', index: 0 };
+		} else {
+			// We are branching to a state number
+			output.next_state = { type: 'state', index: code.state };
+		}
 	}
 
 	microcode.statements.forEach(function (s) {

@@ -75,29 +75,6 @@ function fit(layout, opcodes) {
 		var table = opcode.table,
 				placed = {};
 
-		function breakOut(state) {
-			switch (state.type) {
-
-			// Force NOP in the case where a condition goes anywhere other than a key
-			case 'condition':
-			case 'state':
-				var stateId = base_id++,
-						nop = operation.nop();
-
-				nop.next_state = state;
-				table[stateId] = nop;
-
-				return { type: 'key', name: stateId };
-
-			// This is what we expect
-			case 'key':
-				return state;
-
-			default:
-				throw new Error("Cannot handle " + state.type);
-			}
-		}
-
 		function getSingle(key) {
 			var id;
 
@@ -149,6 +126,7 @@ function fit(layout, opcodes) {
 					code = new layout(memory.buffer, MICROCODE_WORD * address),
 					next = micro.next_state;
 
+
 			Object.keys(micro).forEach(function (k) {
 				if (k === 'next_state') { return ; }
 
@@ -171,9 +149,6 @@ function fit(layout, opcodes) {
 				code.next_state = target;
 				break ;
 			case 'condition':
-				next.true = breakOut(next.true);
-				next.false = breakOut(next.false);
-
 				code.next_state = 
 					getDouble(next.true, next.false);
 

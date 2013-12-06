@@ -1,4 +1,5 @@
-var operation = require('./operation.js'),
+var util = require("./util.js"),
+		operation = require('./operation.js'),
 		base_id = 0;
 
 // Build statement chain
@@ -95,6 +96,34 @@ function make(macros, statements) {
 	if (state.tail.length > 0) {
 		throw new Error("Operation has a dangling tail");
 	}
+
+
+	function breakOut(term) {
+		switch (term.type) {
+
+		// Force NOP in the case where a condition goes anywhere other than a key
+		case 'condition':
+		case 'state':
+			var stateId = base_id++,
+					nop = operation.nop();
+
+			nop.next_state = term;
+			state.table[stateId] = nop;
+
+			return { type: 'key', name: stateId };
+
+		// Does not need to be broken out
+		default:
+			return term;
+		}
+	}
+
+	// Break out the terms chained conditionals (delinquent case)
+	util.each(state.table, function (o, k) {
+		if (o.next_state.type !== "condition") { return ;}
+		o.next_state.true = breakOut(o.next_state.true);
+		o.next_state.false = breakOut(o.next_state.false);
+	});
 
 	return {
 		table: state.table, 
