@@ -1,2 +1,2 @@
-opcode(0) { privileged; }
+opcode(0) { privileged, r3.h = #[a7], r3 = a0.h + r0 + c; }
 //default (0, 0xFF) { ; }

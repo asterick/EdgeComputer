@@ -1,7 +1,3 @@
-/**
- TODO: MICROCODE FORMAT FOR INSTRUCTIONS
- **/
-
 body
   = _ o:top_level*
   	{ return o; }
@@ -64,12 +60,115 @@ microcode
 expression
   = v:flag
     { return { type: "flag", name: v } }
-    // TODO: MEMORY
-    // TODO: ALU
+  / access
+  / math
 
 flag
   = v:("privileged"i) _
     { return v; }
+
+access
+  = r:register_byte "=" _ m:memory
+    { return { type: "access", direction: "read", register: r, memory: m }; }
+  / m:memory "=" _ r:register_byte
+    { return { type: "access", direction: "write", register: r, memory: m }; }
+
+register_byte
+  = r:register b:byte _
+    { return { register: r, byte:b }; }
+
+byte
+  = ".h"i
+    { return "high"; }
+  / ".l"i
+    { return "low"; }
+
+memory
+  = phy:"#"? "[" _ "a" r:[0-7] _  op:postOp "]" _
+    { return { type:"address", address: parseInt(r, 10), operation:op, physical: Boolean(phy) }; }
+
+postOp
+  = "++" _
+    { return "increment"; }
+  / "--" _
+    { return "decrement"; }
+  / _
+    { return "none"; }
+
+math
+  = targets:zbus_latches "=" _ operation:alu_math
+    { return { type: "alu", targets: targets, operation: operation }; }
+
+zbus_latches
+  = a:zbus_target
+    { return [a]; }
+  / "(" _ a:zbus_target b:("," _ b:zbus_target { return b; })* ")" _
+    { return [a].concat(b); }
+
+zbus_target
+  = "msr"i
+    { return { type: "status" }; }
+  / "flags"i
+    { return { type: "flags" }; }
+  / address_reg
+  / register
+
+address_reg
+  = r:"a"i r:[0-7] b:byte _
+    { return { type:"address_reg", byte: b, register: parseInt(r, 10) }; }
+
+register
+  = "r"i r:[0-7] _
+    { return { type: 'register', index: parseInt(r, 10) }; }
+
+alu_math
+  = l_bus:l_bus op:infix r_bus:r_bus carry:carry
+    { return { type: 'binary', left: l_bus, right: r_bus, carry: carry }; }
+  / op:prefix l_bus:l_bus carry:carry
+    { return { type: 'unary', value: l_bus, carry: carry }; }
+  / l_bus:l_bus
+    { return { type: 'move', value: l_bus }; }
+
+prefix
+  = ">>>" _
+    { return "arithmatic-left"; }
+  / ">>" _
+    { return "logical-left"; }
+  / "<<" _
+    { return "logical-right"; }
+
+infix
+  = "+" _
+    { return "add"; }
+  / "-" _
+    { return "sub"; }
+  / "^" _
+    { return "xor"; }
+  / "&" _
+    { return "and"; }
+  / "|" _
+    { return "or"; }
+
+l_bus
+  = n:number
+    { return { type: "immediate", value:n }; }
+  / address_reg
+  / register
+
+r_bus
+  = n:number
+    { return { type: "immediate", value:n }; }
+  / "msr"i _
+    { return { type: "status" }; }
+  / "fault_code"i _
+    { return { type: "fault_code" }; }
+  / register
+
+carry
+  = "+" _ "c"i _
+    { return true; }
+  / _
+    { return false; }
 
 // atomic values
 identifier
