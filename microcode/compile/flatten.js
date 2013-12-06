@@ -4,7 +4,8 @@
  **/
 
 var	make = require("./builder.js"),
-		util = require("./util.js");
+		util = require("./util.js"),
+		heap = require("./heap.js");
 
 function fit(layout, opcodes) {
 	// Compiler constants
@@ -13,68 +14,12 @@ function fit(layout, opcodes) {
 			CONDITION_CODES = { "never": 0, "hi": 1, "gt": 2, "ge": 3, "c": 4, "z": 5, "n": 6, "v": 7 };;
 
 	// Allocation and output variables
-	var memory = new Uint8Array(MICROCODE_ROM * MICROCODE_WORD),
-			available = { 0: MICROCODE_ROM };
+	var memory = new Uint8Array(MICROCODE_ROM * MICROCODE_WORD)
+			allocation = new heap(MICROCODE_ROM);
 
-	function trim_contents(size, start, address, count) {
-		// Clear from previous part of heap
-		delete available[start];
-
-		var a_start = start, 
-				a_count = address - start,
-				b_start = address + count, 
-				b_count = size - (address - start + count);
-
-		// Insert new bits into the heap
-		if (a_count) { available[a_start] = a_count; }
-		if (b_count) { available[b_start] = b_count; }
-	}
-
-	function clear(address, count) {
-		var deleted = false;
-
-		count || (count = 1);
-
-		util.each(available, function (size, start) {
-			start = parseInt(start, 10);
-			
-			if (address < start || (address + count) > (start + size)) {
-				return ;
-			}
-
-			trim_contents(size, start, address, count);
-			deleted = true;
-		});
-
-		if (!deleted) { throw new Error("Could not allocate " + count + " instruction words"); }
-	}
-
-	function allocate(count) {
-		var address;
-
-		util.each(available, function (size, start) {
-			if (address !== undefined) { return ;}
-
-			start = parseInt(start, 10);
-
-			var delta = start % count,
-					offset = delta ? (count - delta) : 0;
-
-			if (size - offset >= count) {
-				address = start + offset;
-				trim_contents(size, start, address, count);
-			}
-		});
-
-		if (address === undefined) {
-			throw new Error("Could not allocate " + count + " instruction words");
-		}
-
-		return address;
-	}
 
 	// Allocate opcodes from state machine
-	util.each(opcodes, function (opcode, i) { clear(parseInt(i)); });
+	util.each(opcodes, function (opcode, i) { allocation.clear(parseInt(i)); });
 
 	// Start assembling them
 	util.each(opcodes, function (opcode, i) {
@@ -89,7 +34,7 @@ function fit(layout, opcodes) {
 			if (placed[key]) {
 				id = placed[key][0];
 			} else {
-				id = allocate(1);
+				id = allocation.allocate(1);
 				mark(id, key);
 				place(id, key);
 			}
@@ -113,7 +58,7 @@ function fit(layout, opcodes) {
 				}
 			}
 
-			var addr = allocate(2);
+			var addr = allocation.allocate(2);
 
 			mark(addr, whenFalse.name);
 			mark(addr+1, whenTrue.name);
@@ -173,10 +118,7 @@ function fit(layout, opcodes) {
 		place(i, opcodes[i].entry);
 	});
 
-	var used = MICROCODE_ROM;
-	util.each(available, function (size) { used -= size; });
-
-	console.log("Microcode placed:", (used / MICROCODE_ROM * 100).toFixed(2) + "%", "used");
+	console.log("Microcode placed:", (allocation.used / MICROCODE_ROM * 100).toFixed(2) + "%", "used");
 
 	return memory;
 }
