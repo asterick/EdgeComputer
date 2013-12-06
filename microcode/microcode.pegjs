@@ -117,6 +117,11 @@ zbus_target
     { return { type: "flags" }; }
   / address_reg
   / register
+  / tlb_register
+
+tlb_register
+  = "tlb."i v:("index" / "bank" / "flags")
+    { return { type: 'tlb', register: v.toLowerCase() }; }
 
 address_reg
   = r:"a"i r:[0-7] b:byte _
@@ -128,9 +133,9 @@ register
 
 alu_math
   = l_bus:l_bus op:infix r_bus:r_bus carry:carry
-    { return { type: 'binary', left: l_bus, right: r_bus, carry: carry }; }
+    { return { type: 'binary', operation: op, left: l_bus, right: r_bus, carry: carry }; }
   / op:prefix l_bus:l_bus carry:carry
-    { return { type: 'unary', value: l_bus, carry: carry }; }
+    { return { type: 'unary', operation: op, value: l_bus, carry: carry }; }
   / l_bus:l_bus
     { return { type: 'move', value: l_bus }; }
 

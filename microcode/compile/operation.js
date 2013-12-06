@@ -12,25 +12,34 @@ var MEMORY_READ = 0,
 		MEMORY_WRITE = 1,
 		MEMORY_OPS = { 'none': 0, 'increment': 1, 'decrement': 3 };
 
-function immediate(v) {
-	var invert = v ^ 0xFFFF;
-			inverted = invert < v,
-			comp = inverted ? invert : v,
-			offset = true;
+var TLB_INDEX = 1,
+		TLB_BANK = 2,
+		TLB_FLAGS = 3;
 
-	for (var i = 0; i < 15; i++) {
-		var off = (1 << i) - 1,
-				on = (1 << i);
+var ZREG_REGISTER = 1,
+		ZREG_ADDR_LOW = 2,
+		ZREG_ADDR_HIGH = 3;
 
-		if (on === comp) {
-			return { bit: i, inverted: inverted, offset: true };
-		} else if(off == comp) {
-			return { bit: i, inverted: inverted, offset: false };
-		}
-	}
+var L_TERM_IMM = 0,
+		L_TERM_REG = 1,
+		L_TERM_ADDR_LOW = 2,
+		L_TERM_ADDR_HIGH = 3;
 
-	throw new Error("Cannot encode " + v + " as immediate");
-}
+var R_TERM_IMM = 0,
+		R_TERM_REGISTER = 1,
+		R_TERM_STATUS = 2,
+		R_TERM_FAULT_CODE = 3;
+
+var ALU_OPS = {
+  "or": 0,
+  "and": 1,
+  "xor": 2,
+  "arithmatic-left": 3,
+  "logical-left": 4,
+  "logical-right": 5,
+  "add": 6,
+  "sub": 7
+};
 
 function encode(microcode) {
 	var output = {};
@@ -40,9 +49,136 @@ function encode(microcode) {
 			throw new Error("Compiler attempted to assign non number to " + key);
 		}
 		if (output[key] !== undefined && output[key] !== value) {
-			throw new Error(key + " is already defined");
+			throw new Error(key + " is already defined, with a different value");
 		}
 		output[key] = value;
+	}
+
+	function assignImm(v) {
+		var invert = v ^ 0xFFFF;
+				inverted = invert < v,
+				comp = inverted ? invert : v,
+				offset = true;
+
+		for (var i = 0; i < 15; i++) {
+			var off = (1 << i) - 1,
+					on = (1 << i);
+
+			if (on === comp) {
+				assign("imm_bit", i);
+				assign("imm_offset", TRUE);
+				assign("imm_invert", inverted ? TRUE : FALSE);
+				return ;
+			} else if(off == comp) {
+				assign("imm_bit", i);
+				assign("imm_offset", FALSE);
+				assign("imm_invert", inverted ? TRUE : FALSE);
+				return ;
+			}
+		}
+
+		throw new Error("Cannot encode " + v + " as immediate");
+	}
+
+	function assignLBus(op) {
+		switch (op.type) {
+			case 'immediate':
+				assignImm(op.value);
+				assign("l_term", L_TERM_IMM);
+				break ;
+			case 'register':
+				assign("l_term", L_TERM_REG);
+				assign("l_select", op.index);
+				break ;
+			case 'address_reg':
+				assign("l_term", op.byte === "high" ? L_TERM_ADDR_HIGH : L_TERM_ADDR_LOW);
+				assign("l_select", op.register);
+				break ;
+
+		}
+	}
+
+	function assignRBus(op) {
+		switch (op.type) {
+			case 'immediate':
+				assignImm(op.value);
+				assign("r_term", R_TERM_IMM);
+				break ;
+			case 'register':
+				assign("r_term", R_TERM_REGISTER);
+				assign("r_select", op.index);
+				break ;
+			case 'status':
+				assign("r_term", R_TERM_STATUS);
+				break ;
+			case 'fault_code':
+				assign("r_term", R_TERM_FAULT_CODE);
+				break ;
+		}
+	}
+
+	function assignALU(code) {
+		code.targets.forEach(function (target) {
+			switch (target.type) {
+			case 'address_reg':
+				assign('z_reg', target.register);
+				assign('latch_zreg', (target.byte === 'high') ? ZREG_ADDR_HIGH : ZREG_ADDR_LOW);
+				break ;
+			case 'register':
+				assign('z_reg', target.index);
+				assign('latch_zreg', ZREG_REGISTER);
+				break ;
+			case 'tlb':
+				switch (target.register) {
+				case 'index':
+					assign('latch_tlb', TLB_INDEX);
+					break ;
+				case 'bank':
+					assign('latch_tlb', TLB_BANK);
+					break ;
+				case 'flags':
+					assign('latch_tlb', TLB_FLAGS);
+					break ;
+				}
+				break ;
+			case 'status':
+				assign('latch_aflags', FALSE);	// Prevent double latching
+				assign('latch_zflags', TRUE);
+				break ;
+			case 'flags':
+				assign('latch_aflags', TRUE);
+				assign('latch_zflags', FALSE);	// Prevent double latching
+				break ;
+			}
+		});
+
+		switch(code.operation.type) {
+		case 'binary':
+			assignLBus(code.operation.left);
+			assignRBus(code.operation.right);
+			assign('alu_op', ALU_OPS[code.operation.operation])
+			assign('carry', code.operation.carry ? TRUE : FALSE);
+			break ;
+		case 'unary':
+			assignLBus(code.operation.value);
+			assign('alu_op', ALU_OPS[code.operation.operation])
+			assign('carry', code.operation.carry ? TRUE : FALSE);
+			break ;
+		case 'move':
+			assign('alu_op', ALU_OPS.or);
+			assignLBus(code.operation.value);
+			assign('carry', FALSE);
+
+			if (code.operation.value.type === 'immediate') {
+				assignRBus(code.operation.value);
+			} else {
+				assignRBus({ type: "immediate", value: 0 });
+			}
+			break ;
+		default:
+			console.log(code.operation);
+			break ;
+		}
 	}
 
 	function assignMemory(code) {
@@ -70,6 +206,9 @@ function encode(microcode) {
 				break ;
 			case 'next':
 				assignNext(s);
+				break ;
+			case 'alu':
+				assignALU(s);
 				break ;
 			default:
 				console.error("UNHANDLED: ", s);
