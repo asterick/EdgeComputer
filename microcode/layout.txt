@@ -28,7 +28,7 @@ bottom little {
 
 	// ALU configuration (8 bits)
 	unsigned:1 carry;					// 0, flags
-	unsigned:3 alu_op;				// or, xor, and, >>, >>>, <<, +, -
+	unsigned:3 alu_op;				// or, and, xor, >>>, >>, <<, +, -
 	unsigned:2 l_term;				// imm, l_reg, addr.l, addr.h
 	unsigned:2 r_term;				// imm, r_reg, flags, fault_code
 

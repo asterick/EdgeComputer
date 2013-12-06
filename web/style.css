@@ -1,7 +1,7 @@
 .main {
 	display: block;
 	font-family: monospace;
-	width: 766px;
+	width: 816px;
 	margin: 10px auto;
 }
 
@@ -27,7 +27,7 @@
 }
 
 .sidebar {
-	width: 230px;
+	width: 280px;
 	display: inline-block;
 	vertical-align: top
 }
@@ -63,7 +63,7 @@
 .register:after {
 	display: inline-block;
 	content: attr(value);
-	width: 4em;
+	width: 6em;
 	text-align: right;
 	padding: 0;
 	margin: 0;
@@ -94,7 +94,7 @@
 .microcode .field:after {
 	display: inline-block;
 	content: attr(value);
-	width: 4em;
+	width: 6em;
 	text-align: right;
 	padding: 0;
 	margin: 0;

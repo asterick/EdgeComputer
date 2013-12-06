@@ -1,8 +1,11 @@
 
 macro next_instruction { next(r3); }
 
+// This is the reset state, should initalize the machine
 opcode(0) {
-	privileged, a7--, (msr, tlb.flags, a3.l) = a0.h, next(r3);
+	r0.h = #[a7++];
+	r0 = a7.h;
+	next(r0);
 }
 
 //opcode(0) { privileged, #[a7--] = r3.h, (msr, tlb.flags, a3.l) = >>> a0.h	 + c, next(r3); }

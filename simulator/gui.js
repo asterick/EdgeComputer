@@ -128,7 +128,7 @@ function update() {
 	disasm.innerHTML = disassemble(code);
 
 	forEach.call(fields, function (n) {
-		n.setAttribute("value", code[n.getAttribute("name")].toString(16).toUpperCase());
+		n.setAttribute("value", code[n.getAttribute("name").toLowerCase()].toString(16).toUpperCase());
 	});
 
 	forEach.call(registers, function (n) {
@@ -136,10 +136,7 @@ function update() {
 	});
 
 	forEach.call(flags, function (n) {
-		var bit = 1 << parseInt(n.getAttribute("bit"), 10),
-				set = system.msr & bit;
-
-		n.classList[set ? "add" : "remove"]("checked");
+		n.classList[system[n.getAttribute("name").toLowerCase()] ? "add" : "remove"]("checked");
 	});
 }
 

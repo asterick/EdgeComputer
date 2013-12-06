@@ -10,6 +10,9 @@ var proto = Object.getPrototypeOf(new layout),
 			return k[0] !== '_'; 
 		});
 
+function imm(code) {
+}
+
 var mc = promise(function (pass, fail) {
 	file.read("microcode.bin").then(function (data) {
 		var states = [],
@@ -19,10 +22,16 @@ var mc = promise(function (pass, fail) {
 		for (var i = 0; i < data.byteLength; i += len) {
 			var l = new layout(data, i);
 
-			states[g++] = keys.reduce(function (o, key) {
+			var o = keys.reduce(function (o, key) {
 				o[key] = l[key];
 				return o;
 			}, {});	
+
+			// Precalculate immediate value
+			var c = (1 << o.imm_bit) - (o.imm_offset ? 0 : 1);
+			o._immediate = o.imm_invert ? (c ^ 0xFFFF) : c;
+
+			states[g++] = o;
 		}
 
 		pass(states);

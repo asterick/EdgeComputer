@@ -39,11 +39,8 @@ System.prototype.read = function (address) {
 	}
 }
 
-System.prototype.step = function () {};
-
 external.then(function (microcode, bios) {
 	System.prototype.bios = new Uint8Array(bios[0]);
-	delete System.prototype.step;
 })
 
 module.exports = System;
