@@ -39,7 +39,8 @@ function build(statements, table, labels, reassigns, tail) {
 
 				table[stateId] = state;
 				setStates({ type: 'key', name: stateId });
-				tail = [{ key: "next_state", target: state }];
+
+				tail = state.next_state ? [] : [{ key: "next_state", target: state }];
 
 				break ;
 			case 'if':
@@ -97,10 +98,13 @@ function make(statements) {
 		r.name = state.labels[r.name];
 	});
 
-	// All tails jump to state 0 (next operation)
-	state.tail.forEach(function (t) {
-		t.target[t.key] = { type: 'state', index: 0 };
-	})
+
+	//console.log(JSON.stringify(state, null, 4));
+
+	// If there are any tail's, throw an exception
+	if (state.tail.length > 0) {
+		throw new Error("Operation has a dangling tail");
+	}
 
 	return {
 		table: state.table, 
@@ -301,11 +305,8 @@ function compile(layout, ast) {
 	ast.forEach(function (op) {
 		switch (op.type) {
 		case "opcode":
-			if (opcodes[op.code]) {
-				throw new Error("Opcode " + op.code + " is already defined");
-			}
-
 			opcodes[op.code] = make(op.expressions);
+
 			break ;
 		case "default":
 			def_op = make(op.expressions);

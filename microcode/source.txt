@@ -1,5 +1,5 @@
 
-macro next_instruction { ; }
+macro next_instruction { next(r3); }
 
-opcode(0) { privileged, r3.h = #[a7], r3 = a0.h + r0 + c; }
-default (0, 0xFF) { # next_instruction; }
+opcode(0) { privileged, #[a7--] = r3.h, r3 = a0.h + r3 + c, next(r3); }
+//default (0, 0xFF) { # next_instruction; }

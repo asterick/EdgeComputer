@@ -52,7 +52,7 @@ goto
 		{ return { type: "goto", label: l }; }
 
 microcode
-  = e:expression t:("," _ e:expression { return e; })*
+  = e:expression t:("," _ e:expression { return e; })* ";" _
     { return { type: "microcode", statements: [e].concat(t) }; }
   / ";" _
   	{ return { type: "microcode", statements: [] }; }
@@ -60,12 +60,17 @@ microcode
 expression
   = v:flag
     { return { type: "flag", name: v } }
+  / next
   / access
   / math
 
 flag
   = v:("privileged"i) _
     { return v; }
+
+next
+  = "next"i _ "(" _ r:register ")" _
+    { return { type: 'next', register: r }; }
 
 access
   = r:register_byte "=" _ m:memory
