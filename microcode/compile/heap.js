@@ -9,13 +9,12 @@ heap.prototype.trim = function (size, start, address, count) {
 	// Clear from previous part of heap
 	delete this.available[start];
 
-	var a_start = start, 
-			a_count = address - start,
+	var a_count = address - start,
 			b_start = address + count, 
 			b_count = size - (address - start + count);
 
 	// Insert new bits into the heap
-	if (a_count) { this.available[a_start] = a_count; }
+	if (a_count) { this.available[start] = a_count; }
 	if (b_count) { this.available[b_start] = b_count; }
 
 	this.used += count;

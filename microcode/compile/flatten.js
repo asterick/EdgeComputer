@@ -17,9 +17,10 @@ function fit(layout, opcodes) {
 	var memory = new Uint8Array(MICROCODE_ROM * MICROCODE_WORD)
 			allocation = new heap(MICROCODE_ROM);
 
-
 	// Allocate opcodes from state machine
-	util.each(opcodes, function (opcode, i) { allocation.clear(parseInt(i)); });
+	util.each(opcodes, function (opcode, i) {
+		allocation.clear(parseInt(i));
+	});
 
 	// Start assembling them
 	util.each(opcodes, function (opcode, i) {
