@@ -21,6 +21,10 @@ var TLB_INDEX 		 = 0x000F,
 		TLB_BANK_INIT  = 0x2000,
 		TLB_BANK_TOP   = 0x0FFF;
 
+var BANK_ADDR_L		 = 0,
+		BANK_ADDR_H    = 1,
+		BANK_REG			 = 2;
+
 function Processor() {
 	this.reset();
 
@@ -64,9 +68,34 @@ function Processor() {
 	}
 }
 
+Object.defineProperties(Processor.prototype, {
+	msr: { get: function () { return 0; } },
+
+	r0:  { get: function () { return this.registers[BANK_REG +  0]; } },
+	r1:  { get: function () { return this.registers[BANK_REG +  4]; } },
+	r2:  { get: function () { return this.registers[BANK_REG +  8]; } },
+	r3:  { get: function () { return this.registers[BANK_REG + 12]; } },
+	r4:  { get: function () { return this.registers[BANK_REG + 16]; } },
+	r5:  { get: function () { return this.registers[BANK_REG + 20]; } },
+	r6:  { get: function () { return this.registers[BANK_REG + 24]; } },
+	r7:  { get: function () { return this.registers[BANK_REG + 28]; } },
+
+	a0:  { get: function () { return this.registers[ 0]; } },
+	a1:  { get: function () { return this.registers[ 2]; } },
+	a2:  { get: function () { return this.registers[ 4]; } },
+	a3:  { get: function () { return this.registers[ 6]; } },
+	a4:  { get: function () { return this.registers[ 8]; } },
+	a5:  { get: function () { return this.registers[10]; } },
+	a6:  { get: function () { return this.registers[12]; } },
+	a7:  { get: function () { return this.registers[14]; } }
+});
+
 Processor.prototype.reset = function () {
 	// Current machine state (0 = reset)
 	this.state = 0;
+
+	this.registers = new Uint16Array(8*4); // 4x8x16b Register files
+	this.wide_regs = new Uint32Array(this.registers.buffer);
 
 	// TLB Circuit
 	this.tlb_index = 0;

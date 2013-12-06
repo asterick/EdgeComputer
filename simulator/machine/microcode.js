@@ -5,7 +5,10 @@ var fs = require("fs"),
 		layout = struct.parse(fs.readFileSync("./microcode/layout.txt", "utf-8"));
 
 // We are going to flatten this to plain objects, for speed
-var keys = Object.getOwnPropertyNames(Object.getPrototypeOf(new layout));
+var proto = Object.getPrototypeOf(new layout),
+		keys = Object.getOwnPropertyNames(proto).filter(function (k) {
+			return k[0] !== '_'; 
+		});
 
 var mc = promise(function (pass, fail) {
 	file.read("microcode.bin").then(function (data) {
