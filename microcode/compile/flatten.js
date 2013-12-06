@@ -1,116 +1,10 @@
 var conditionCodes = { "never": 0, "hi": 1, "gt": 2, "ge": 3, "c": 4, "z": 5, "n": 6, "v": 7 };
 
-var	operation = require('./operation.js'),
+var	make = require("./builder.js"),
 		util = require("./util.js");
 
 // Global constants (sad face)
-var MICROCODE_ROM 	= 0x2000,
-		macros = {},
-		base_id = 0;
-
-// Build statement chain
-function build(statements, table, labels, reassigns, tail) {
-	table || (table = {});
-	tail || (tail = []);
-	labels || (labels = {});
-	reassigns || (reassigns = []);
-
-	var entry = base_id;
-
-	function setStates(next, branch) {
-		// Insert NOP when nessessary
-
-		if (branch && tail.length === 0) {
-			var state = operation.nop();
-			table[base_id++] = state;
-			tail = [{ key: "next_state", target: state }];
-		}
-
-		tail.forEach(function (o) {
-			o.target[o.key] = next;
-		});
-	}
-
-	(statements || []).forEach(function (f) {
-		switch (f.type) {
-			case 'microcode':
-				var stateId = base_id++,
-						state = operation.encode(f);
-
-				table[stateId] = state;
-				setStates({ type: 'key', name: stateId });
-
-				tail = state.next_state ? [] : [{ key: "next_state", target: state }];
-
-				break ;
-			case 'if':
-				var branch = { type: 'condition', condition: f.condition, immediate: f.immediate },
-						onTrue, onFalse;
-
-				if (f.invert) {
-					onFalse = build(f.statements, table, labels, reassigns, [{ key: 'false', target: branch }]);
-					onTrue  = build( f.otherwise, table, labels, reassigns, [{ key:  'true', target: branch }]);
-				} else {
-					onFalse = build( f.otherwise, table, labels, reassigns, [{ key: 'false', target: branch }]);
-					onTrue  = build(f.statements, table, labels, reassigns, [{ key:  'true', target: branch }]);
-				}
-
-				setStates(branch, true);
-				tail = onFalse.tail.concat(onTrue.tail);
-
-				break ;
-			case 'include':
-				if (macros[f.name] === undefined) {
-					throw new Error("Macro " + f.name + " is undefined.");
-				}
-				
-				tail = build(macros[f.name], table, labels, reassigns, tail).tail;
-
-				break ;
-			case 'goto':
-				var next = { type: 'key', name: f.label };
-
-				reassigns.push(next);
-
-				setStates(next, true);
-				tail = [];
-				break ;
-			case 'label':
-				labels[f.label] = base_id;
-				break ;
-			default:
-				throw new Error("Unhandled AST element: " + f.type);
-		}
-	});
-
-	return { table: table, tail: tail, entry: entry, reassigns: reassigns, labels: labels };
-}
-
-function make(statements) {
-	var state = build(statements);
-
-	// Remap labels to their next state address
-	state.reassigns.forEach(function (r) {
-		if (state.labels[r.name] === undefined) {
-			throw new Error("Cannot reassign label " + r.name);
-		}
-
-		r.name = state.labels[r.name];
-	});
-
-
-	//console.log(JSON.stringify(state, null, 4));
-
-	// If there are any tail's, throw an exception
-	if (state.tail.length > 0) {
-		throw new Error("Operation has a dangling tail");
-	}
-
-	return {
-		table: state.table, 
-		entry: state.entry
-	}
-}
+var MICROCODE_ROM 	= 0x2000;
 
 // NOTE: THIS IS A NAIVE PLACER, WILL NOT ATTEMPT TO DO TAIL OVERLAP OPTIMIZATION
 function fit(layout, opcodes) {
@@ -305,17 +199,18 @@ function fit(layout, opcodes) {
 }
 
 function compile(layout, ast) {
-	var opcodes = [],
+	var macros = {},
+			opcodes = [],
 			def_op, i;
 
 	ast.forEach(function (op) {
 		switch (op.type) {
 		case "opcode":
-			opcodes[op.code] = make(op.expressions);
+			opcodes[op.code] = make(macros, op.expressions);
 
 			break ;
 		case "default":
-			def_op = make(op.expressions);
+			def_op = make(macros, op.expressions);
 			for (i = op.start; i <= op.end; i++) {
 				opcodes[i] || (opcodes[i] = def_op);
 			}
@@ -333,6 +228,5 @@ function compile(layout, ast) {
 }
 
 module.exports = {
-	build: build,
 	compile: compile
 };
