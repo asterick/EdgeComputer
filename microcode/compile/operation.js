@@ -191,6 +191,12 @@ function encode(microcode) {
 		assign("disable_tlb", code.memory.physical ? TRUE : FALSE);
 	}
 
+	function assignMemoryOp(code) {
+		assign("mem_active", FALSE);
+		assign("mem_addr", code.address);
+		assign("mem_addr_op", MEMORY_OPS[code.operation]);
+	}
+
 	function assignNext(code) {
 		assign("r_select", code.register.index);
 		output.next_state = { type: 'state', index: 0 };
@@ -209,6 +215,9 @@ function encode(microcode) {
 				break ;
 			case 'alu':
 				assignALU(s);
+				break ;
+			case 'address_op':
+				assignMemoryOp(s);
 				break ;
 			default:
 				console.error("UNHANDLED: ", s);

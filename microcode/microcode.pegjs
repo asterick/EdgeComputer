@@ -61,8 +61,13 @@ expression
   = v:flag
     { return { type: "flag", name: v } }
   / next
+  / inc_addr
   / access
   / math
+
+inc_addr
+  = "a"i r:[0-7] _  op:postOp
+    { return { type: "address_op", address: parseInt(r, 10), operation: op }; }
 
 flag
   = v:("privileged"i) _

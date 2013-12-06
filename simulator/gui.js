@@ -33,6 +33,8 @@ function disassemble(code) {
 				targ = "r" + code.r_select.toString() + (code.mem_byte ? ".h" : ".l");
 
 		parts.push(code.mem_dir ? (addr + " = " + targ) : (targ + " = " + addr));
+	} else if (code.mem_addr_op) {
+		parts.push("a" + code.mem_addr.toString() + ["","++","","--"][code.mem_addr_op]);
 	}
 
 	// Latches
@@ -102,7 +104,7 @@ function disassemble(code) {
 			break ;
 		}
 
-		parts.push(targets.join(",") + " = " + action + (code.carry ? " + c" : ""));
+		parts.push("(" + targets.join(",") + ") = " + action + (code.carry ? " + c" : ""));
 	}
 
 	if (code.condition) {

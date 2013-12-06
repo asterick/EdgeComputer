@@ -2,7 +2,7 @@
 macro next_instruction { next(r3); }
 
 opcode(0) {
-	privileged, #[a7--] = r3.h, (msr, tlb.flags, a3.l) = a0.h, next(r3);
+	privileged, a7--, (msr, tlb.flags, a3.l) = a0.h, next(r3);
 }
 
 //opcode(0) { privileged, #[a7--] = r3.h, (msr, tlb.flags, a3.l) = >>> a0.h	 + c, next(r3); }
