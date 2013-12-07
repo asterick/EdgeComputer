@@ -1,27 +1,29 @@
 /*
  * Register mapping:
- * R0-R6: General purpose registers
+ * R0-R5: General purpose registers
  * A0-A3: General purpose addressing registers
- * R7:    Temporary register
+ * R6-R7: Temporary registers
  * A4:    Stack pointer
  * A5:    Service stack pointer
- * A6:    Interrupt service table
- * A7:    Program Cursor
+ * A6:    Program Cursor
+ * A7:    Interrupt service table
  */
 
-
-macro next_instruction {
-	r0.l = [a7++], r0 = 0x0100; next(r0);
-}
-
-// This is the reset state, should initalize the machine
+// --- Reset state ---
 state(0) {
-	if (c) { if (z) { next(r1); } }
-	# next_instruction;
+	next(0);
 }
 
-state(0x100) {
-	next(r7);
+// --- ISR -----------
+state(1) {
+	// TODO: ACTUALLY BUILD AN ISR
+	next(1);
 }
 
-default (0x100, 0x1FF) { #next_instruction; }
+state(2) {
+	next(2);
+}
+
+default (0x100, 0x1FF) {
+	r7.l = [a7++]; r7 = 0x0100; next(r7);
+}

@@ -61,9 +61,9 @@ expression
   = v:flag
     { return { type: "flag", name: v } }
   / next
-  / inc_addr
-  / access
   / math
+  / access
+  / inc_addr
 
 inc_addr
   = "a"i r:[0-7] _  op:postOp
@@ -118,9 +118,9 @@ zbus_latches
     { return [a].concat(b); }
 
 zbus_target
-  = "msr"i
+  = "msr"i _
     { return { type: "status" }; }
-  / "flags"i
+  / "flags"i _
     { return { type: "flags" }; }
   / address_reg
   / register
