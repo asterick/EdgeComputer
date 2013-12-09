@@ -127,7 +127,7 @@ zbus_target
   / tlb_register
 
 tlb_register
-  = "tlb."i v:("index" / "bank" / "flags")
+  = "tlb."i v:("index" / "bank" / "flags") _
     { return { type: 'tlb', register: v.toLowerCase() }; }
 
 address_reg
@@ -145,6 +145,8 @@ alu_math
     { return { type: 'unary', operation: op, value: l_bus, carry: carry }; }
   / l_bus:l_bus
     { return { type: 'move', value: l_bus }; }
+  / r_bus:r_bus
+    { return { type: 'binary', operation: "or", left:  { type: "immediate", value:0 }, right: r_bus, carry: false }; }
 
 prefix
   = ">>>" _

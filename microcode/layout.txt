@@ -1,3 +1,10 @@
+/*
+cycle 1: TLB prepare (/RD and /WR high)
+cycle 2: Latch ALU and condition, Address stable (/RD or /WR low, /RAS asserted)
+cycle 3: Latch memory (/RD or /WR low, /CAS and /WE asserted)
+cycle 4: Setup next state (/RD or /WR high)
+*/
+
 bottom little {
 	// Flags (1 bit)
 	unsigned:1 privileged;		// Privileged state / instruction
@@ -37,10 +44,3 @@ bottom little {
 	unsigned:3 	condition;		// never, hi, ge, gt, c, z, n, v
 	unsigned:13 next_state;		// 0 ... 8191
 }
-
-
-cycle 1: TLB prepare (/RD and /WR high)
-cycle 2: Address stable (/RD or /WR low)
-cycle 3: Latch memory (/RD or /WR low)
-cycle 4: Setup next state (/RD or /WR high)
-

@@ -2,7 +2,8 @@
  * Register mapping:
  * R0-R5: General purpose registers
  * R6-R7: Temporary registers
- * A0-A3: General purpose addressing registers
+ * A0-A2: General purpose addressing registers
+ * A3:		Temporary
  * A4:    Stack pointer
  * A5:    Service stack pointer
  * A6:    Program Cursor
@@ -10,24 +11,174 @@
  */
 
 macro next {
-	r7 = 0x0100, r7.l = [a7++]; next(r7);
+	// Load next instruction (unshifted)
+	r7 = 0x0100, r7.l = [a7++], next(r7);
 }
 
 // --- Reset state ---
 state(0) {
-	next(0);
+	// Initalize Vector table to 0 bios space
+	a7.h = 0; 
+	a7.l = 0;
+
+	// Supervisor mode, No TLB, Load PC
+	msr = 0x0200, r6.l = [a7++];	
+                r6.h = [a7++]; 
+	a6.l = r6,    r6.l = [a7++];
+	              r6.h = [a7++];
+	a6.h = r7; 
+
+	// ISR = 0x000004 (Reset vector is unmapped)
+	# next;
 }
 
 // --- ISR -----------
 state(1) {
-	// TODO: ACTUALLY BUILD AN ISR
-	next(1);
+	// Preserve PC and MSR
+	r7 = r0,   [a5++] = r7.l;
+	           [a5++] = r7.h;
+	r7 = msr,  [a5++] = r7.l;
+	           [a5++] = r7.h;
+	r7 = a6.l, [a5++] = r7.l;
+	           [a5++] = r7.h;
+	r7 = a6.h, [a5++] = r7.l;
+	           [a5++] = r7.h;
+
+	// Load vector index
+	r7 = 0x3FFF & fault_code;
+	(a6.l, flags) = a7.l + r7;
+	(a6.h) = a7.h + 0 + c;
+
+	// Indirect load vector (and enter supervisor mode)
+	msr = 0x0200, r6.l = [a6++];
+	              r6.h = [a6++];
+	              r7.l = [a6++];
+	              r7.h = [a6++];
+	a6.l = r6; 
+	a6.h = r7;
+
+	# next;
 }
 
-state(2) {
-	next(2);
+// ENTER (software interrupt)
+state (0x100) {
+	// Preserve PC and MSR (NOTE: NOT PRESERVING R0)
+	r7 = msr,  [a5++] = r7.l;
+	           [a5++] = r7.h;
+	r7 = a6.l, [a5++] = r7.l;
+	           [a5++] = r7.h;
+	r7 = a6.h, [a5++] = r7.l;
+	           [a5++] = r7.h;
+
+	// 0x1xxxx = software interrupt table
+	r7 = r0 & 0xFFFC;
+	(a6.l, flags) = a7.l + r7;
+	(a6.h) = a7.h + 0x0001 + c;
+
+	// Indirect load vector (and enter supervisor mode)
+	msr = 0x0200, r6.l = [a6++];
+	              r6.h = [a6++];
+	              r7.l = [a6++];
+	              r7.h = [a6++];
+	a6.l = r6; 
+	a6.h = r7;
+
+	# next;
 }
 
+state (0x101) {
+	privileged, a5--;
+             r7.h = [a5--];
+	           r7.l = [a5--];
+	a6.h = r7, r7.h = [a5--];
+	           r7.l = [a5--];
+	a6.l = r7, r7.h = [a5--];
+	           r7.l = [a5--];
+  msr = r7,  r7.h = [a5--];
+	           r7.l = [a5--];
+  r0 = r7;
+
+	# next;
+}
+
+state (0x102) {
+	a4--;
+             r7.h = [a4--];
+	           r7.l = [a4--];
+	a6.h = r7, r7.h = [a4--];
+	           r7.l = [a4--];
+	a6.l = r7;
+	# next;
+}
+
+state (0x103) {
+	privileged, tlb.index = r0;
+	# next;
+}
+
+state (0x103) {
+	privileged, tlb.bank = r0;
+	# next;
+}
+
+state (0x103) {
+	privileged, tlb.flags = r0;
+	# next;
+}
+
+state (0x1FF) {
+	// Shifted opcode
+	r7 = 0x0200, r7.l = [a7++], next(r7);
+}
+
+// Block move instructions
+state (0x200) {
+	loop:
+		r7.l = [a0++];
+		[a1++] = r7.l, r0 = r0 - 1; 
+		if (@~c) { goto loop; }
+	# next ;
+}
+
+state (0x201) {
+	loop:
+		r7.l = [a0--];
+		[a1++] = r7.l, r0 = r0 - 1; 
+		if (@~c) { goto loop; }
+	# next ;
+}
+
+state (0x202) {
+	loop:
+		r7.l = [a0++];
+		[a1--] = r7.l, r0 = r0 - 1; 
+		if (@~c) { goto loop; }
+	# next ;
+}
+
+state (0x203) {
+	loop:
+		r7.l = [a0--];
+		[a1--] = r7.l, r0 = r0 - 1; 
+		if (@~c) { goto loop; }
+	# next ;
+}
+
+state (0x204) {
+	loop:
+		r7.l = [a0++];
+		[a1] = r7.l, r0 = r0 - 1; 
+		if (@~c) { goto loop; }
+	# next ;
+}
+
+state (0x205) {
+	loop:
+		r7.l = [a0];
+		[a1++] = r7.l, r0 = r0 - 1; 
+		if (@~c) { goto loop; }
+	# next ;
+}
 
 // Set all unmapped instructions as noops
 default (0x100, 0x2FF) {
