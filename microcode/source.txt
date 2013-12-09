@@ -1,13 +1,17 @@
 /*
  * Register mapping:
  * R0-R5: General purpose registers
- * A0-A3: General purpose addressing registers
  * R6-R7: Temporary registers
+ * A0-A3: General purpose addressing registers
  * A4:    Stack pointer
  * A5:    Service stack pointer
  * A6:    Program Cursor
  * A7:    Interrupt service table
  */
+
+macro next {
+	r7 = 0x0100, r7.l = [a7++]; next(r7);
+}
 
 // --- Reset state ---
 state(0) {
@@ -24,6 +28,8 @@ state(2) {
 	next(2);
 }
 
-default (0x100, 0x1FF) {
-	r7.l = [a7++]; r7 = 0x0100; next(r7);
+
+// Set all unmapped instructions as noops
+default (0x100, 0x2FF) {
+	# next ;
 }

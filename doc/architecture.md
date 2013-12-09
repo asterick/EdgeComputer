@@ -28,18 +28,17 @@ Unmapped hardware
 	* 4 bytes mapped
 * YM3812 OPL2 audio
 	* 2 bytes mapped
-* IDE harddrive bus (single port)
-	* 16 bytes mapped (2 drives)
-
-TODO: _Removable drive?_
+* Super I/O
+	* IDE, UART, Parallel port and Floppy controller
+	* 2048 bytes mapped
 
 Memory map
 ----------
 
-Range | Mapping
---- | ---
-0x000000 ~ 0x07FFFF | BIOS (flash)
-0x080000 ~ 0x0FFFFF | Hardware space
-0x100000 ~ 0x7F0000 | Unmapped
-0x800000 ~ 0xFFFFFF | SRAM
+              Range |     Type | Description
+------------------- | -------- | -------------------
+0x000000 ~ 0x07FFFF |     BIOS | Socketed Flash
+0x080000 ~ 0x0FFFFF | Hardware | 512kB space allocated for additinal hardware
+0x100000 ~ 0x3F0000 |      RAM | Hardwired SRAM 
+0x400000 ~ 0xFFFFFF |     DRAM | 3x 30-pin simm
 
