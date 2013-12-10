@@ -25,7 +25,7 @@ function macro(macro, args) {
 		var idx = macro.arguments.indexOf(state.name);
 
 		if (idx < 0) {
-			throw new Error("Identifier " + state.name + "was not defined in the macro");
+			throw new Error("Identifier " + state.name + " was not defined in the macro");
 		}
 
 		return args[idx];
@@ -47,7 +47,7 @@ function build(macros, statements, table, labels, reassigns, tail) {
 		// Insert NOP when nessessary
 
 		if (branch && tail.length === 0) {
-			var state = operation.nop();
+			var state = {};
 			table[base_id++] = state;
 			tail = [{ key: "next_state", target: state }];
 		}
@@ -61,12 +61,16 @@ function build(macros, statements, table, labels, reassigns, tail) {
 		switch (f.type) {
 			case 'microcode':
 				var stateId = base_id++,
-						state = operation.encode(f);
+						state = {};
+
+				operation.encode(state, f.statement);
 
 				table[stateId] = state;
 				setStates({ type: 'key', name: stateId });
 
 				tail = state.next_state ? [] : [{ key: "next_state", target: state }];
+
+				last = f.statement.type;
 
 				break ;
 			case 'if':
@@ -93,9 +97,20 @@ function build(macros, statements, table, labels, reassigns, tail) {
 				tail = build(macros, macro(macros[f.name], f.arguments), table, labels, reassigns, tail).tail;
 				break ;
 			case 'goto':
-				var next = { type: 'key', name: f.label };
+				var next;
 
-				reassigns.push(next);
+				switch (f.target.type) {
+				case "identifier":
+					next = { type: 'key', name: f.target.name };
+					reassigns.push(next);
+					break ;
+				case "immediate":
+					next = { type: 'state', name: f.target.value };
+					break ;
+				case "register":
+					next = { type: 'state', index: 0, register: f.target.index };
+					break ;
+				}
 
 				setStates(next, true);
 				tail = [];
@@ -136,7 +151,7 @@ function make(macros, statements) {
 		case 'condition':
 		case 'state':
 			var stateId = base_id++,
-					nop = operation.nop();
+					nop = {};
 
 			nop.next_state = term;
 			state.table[stateId] = nop;

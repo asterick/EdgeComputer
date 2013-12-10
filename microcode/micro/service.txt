@@ -9,9 +9,9 @@ macro reset {
 	a7.l = 0;
 
 	// Supervisor mode, No TLB, Load PC
-	msr = 0x0200, r6.l = [a7++];	
+	msr = 0x0200; r6.l = [a7++];	
                 r6.h = [a7++]; 
-	a6.l = r6,    r6.l = [a7++];
+	a6.l = r6;    r6.l = [a7++];
 	              r6.h = [a7++];
 	a6.h = r7; 
 
@@ -21,7 +21,7 @@ macro reset {
 
 macro isr_jump {
 	// Indirect load vector (and enter supervisor mode)
-	msr = 0x0200, r6.l = [a6++];
+	msr = 0x0200; r6.l = [a6++];
 	              r6.h = [a6++];
 	              r7.l = [a6++];
 	              r7.h = [a6++];
@@ -32,11 +32,11 @@ macro isr_jump {
 
 macro isr_preserve {
 	// Preserve PC and MSR
-	r7 = msr,  [a5++] = r7.l;
+	r7 = msr;  [a5++] = r7.l;
 	           [a5++] = r7.h;
-	r7 = a6.l, [a5++] = r7.l;
+	r7 = a6.l; [a5++] = r7.l;
 	           [a5++] = r7.h;
-	r7 = a6.h, [a5++] = r7.l;
+	r7 = a6.h; [a5++] = r7.l;
 	           [a5++] = r7.h;
 }
 

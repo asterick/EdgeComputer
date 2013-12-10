@@ -1,4 +1,6 @@
 macro next {
 	// Load next instruction (unshifted)
-	r7 = 0x0100, r7.l = [a7++], next(r7);
+	r7 = 0x0100; 
+	r7.l = [a7++]; 
+	goto r7;
 }

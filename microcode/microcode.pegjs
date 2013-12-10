@@ -70,19 +70,22 @@ label
 		{ return { type: "label", label: l }; }
 
 goto
-	= "goto" whitespace+ l:identifier ";" _
-		{ return { type: "goto", label: l }; }
+	= "goto" whitespace+ l:branch_target ";" _
+		{ return { type: "goto", target: l }; }
+
+branch_target
+  = register
+  / immediate  
+  / i:identifier
+    { return { type: "identifier", name: i }; }
 
 microcode
-  = e:expression t:("," _ e:expression { return e; })* ";" _
-    { return { type: "microcode", statements: [e].concat(t) }; }
-  / ";" _
-  	{ return { type: "microcode", statements: [] }; }
+  = e:expression ";" _
+    { return { type: "microcode", statement: e }; }
 
 expression
   = v:flag
     { return { type: "flag", name: v } }
-  / next
   / math
   / access
   / inc_addr

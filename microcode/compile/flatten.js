@@ -80,7 +80,6 @@ function fit(layout, opcodes) {
 					code = new layout(memory.buffer, MICROCODE_WORD * address),
 					next = micro.next_state;
 
-
 			Object.keys(micro).forEach(function (k) {
 				if (k === 'next_state') { return ; }
 
@@ -94,6 +93,14 @@ function fit(layout, opcodes) {
 			switch (next.type) {
 			// This is a raw state, so we simply take it as gospel
 			case 'state':
+				if (next.register !== undefined) {
+					if (micro.r_select !== undefined &&
+							micro.r_select !== next.register) {
+						throw new Error("Attempting to overload the r_select field");
+					}
+
+					code.r_select = next.register;
+				}
 				code.next_state = next.index;
 				break ;
 			// Simple branch, check if already placed, if not insert

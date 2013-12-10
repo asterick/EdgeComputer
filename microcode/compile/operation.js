@@ -41,9 +41,7 @@ var ALU_OPS = {
   "sub": 7
 };
 
-function encode(microcode) {
-	var output = {};
-
+function encode(output, statement) {
 	function assign(key, value) {
 		if (typeof value !== "number") {
 			throw new Error("Compiler attempted to assign non number to " + key);
@@ -202,44 +200,27 @@ function encode(microcode) {
 		assign("mem_addr_op", MEMORY_OPS[code.operation]);
 	}
 
-	function assignNext(code) {
-		if (code.register) {
-			// We are branching to an index
-			assign("r_select", code.register.index);
-			output.next_state = { type: 'state', index: 0 };
-		} else {
-			// We are branching to a state number
-			output.next_state = { type: 'state', index: code.state };
-		}
+	switch (statement.type) {
+		case 'flag':
+			output[statement.name] = TRUE;
+			break;
+		case 'access':
+			assignMemory(statement);
+			break ;
+		case 'alu':
+			assignALU(statement);
+			break ;
+		case 'address_op':
+			assignMemoryOp(statement);
+			break ;
+		default:
+			console.error("UNHANDLED: ", statement);
+			break ;
 	}
-
-	microcode.statements.forEach(function (s) {
-		switch (s.type) {
-			case 'flag':
-				output[s.name] = TRUE;
-				break;
-			case 'access':
-				assignMemory(s);
-				break ;
-			case 'next':
-				assignNext(s);
-				break ;
-			case 'alu':
-				assignALU(s);
-				break ;
-			case 'address_op':
-				assignMemoryOp(s);
-				break ;
-			default:
-				console.error("UNHANDLED: ", s);
-				break ;
-		}
-	});
 
 	return output;
 }
 
 module.exports = {
-	encode: encode,
-	nop: function () { return encode({ type: "microcode", statements:[] }) }
+	encode: encode
 };
