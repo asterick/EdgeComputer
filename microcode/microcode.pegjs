@@ -4,7 +4,12 @@ body
 
 top_level
 	= opcode
+  / import
 	/ macro
+
+import
+  = "import"i _ s:string _
+    { return { type: "import", file:s }; }
 
 opcode
   = "state"i _ "(" _ o:number _  ")" _ b:block
@@ -203,6 +208,12 @@ number
 		{ return parseInt(v.join(''), 8); }
 	/ v:[0-9]+ _
 		{ return parseInt(v.join(''), 10); }
+
+string
+  = '"' c:(!'"' c:. { return c; })* '"'
+    { return c.join(''); }
+  / "'" c:(!"'" c:. { return c; })* "'"
+    { return c.join(''); }
 
 // These are whitespace tokens, ignored
 _

@@ -124,30 +124,46 @@ function fit(layout, opcodes) {
 	return memory;
 }
 
-function compile(layout, ast) {
-	var macros = {},
-			opcodes = [],
+function compile(layout, read, source, macros, opcodes) {
+	var ast = read(source),
 			def_op, i;
 
-	ast.forEach(function (op) {
-		switch (op.type) {
-		case "opcode":
-			opcodes[op.code] = make(macros, op.expressions);
+	opcodes || (opcodes = {});
+	macros || (macros = {});
 
-			break ;
-		case "default":
-			def_op = make(macros, op.expressions);
-			for (i = op.start; i <= op.end; i++) {
-				opcodes[i] || (opcodes[i] = def_op);
+
+	function process(ast) {
+		ast.forEach(function (op) {
+			switch (op.type) {
+			case "import":
+				process(read(op.file));
+				break ;
+
+			case "opcode":
+				if (opcodes[op.code]) {
+					throw new Error("State 0x" + op.code.toString(16) + " is already defined");
+				}
+
+				opcodes[op.code] = make(macros, op.expressions);
+				break ;
+
+			case "default":
+				def_op = make(macros, op.expressions);
+				for (i = op.start; i <= op.end; i++) {
+					opcodes[i] || (opcodes[i] = def_op);
+				}
+				break ;
+
+			case "macro":
+				macros[op.name] = op.statements;
+				break ;
+			default:
+				throw new Error("Cannot handle " + op.type);
 			}
-			break ;
-		case "macro":
-			macros[op.name] = op.statements;
-			break ;
-		default:
-			throw new Error("Cannot handle " + op.type);
-		}
-	});
+		});
+	}
+
+	process(ast);
 
 	// Fit all the opcodes into the state table
 	return fit(layout, opcodes);

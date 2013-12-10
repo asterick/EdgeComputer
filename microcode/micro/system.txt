@@ -1,0 +1,51 @@
+// ENTER (software interrupt)
+state (0x100) {
+	# isr_preserve ;
+
+	// 0x1xxxx = software interrupt table
+	r7 = r0 & 0xFFFC;
+	(a6.l, flags) = a7.l + r7;
+	(a6.h) = a7.h + 0x0001 + c;
+
+	# isr_jump;
+}
+
+state (0x101) {
+	privileged, a5--;
+             r7.h = [a5--];
+	           r7.l = [a5--];
+	a6.h = r7, r7.h = [a5--];
+	           r7.l = [a5--];
+	a6.l = r7, r7.h = [a5--];
+	           r7.l = [a5--];
+  msr = r7,  r7.h = [a5--];
+	           r7.l = [a5--];
+  r0 = r7;
+
+	# next;
+}
+
+state (0x102) {
+	a4--;
+             r7.h = [a4--];
+	           r7.l = [a4--];
+	a6.h = r7, r7.h = [a4--];
+	           r7.l = [a4--];
+	a6.l = r7;
+	# next;
+}
+
+state (0x103) {
+	privileged, tlb.index = r0;
+	# next;
+}
+
+state (0x103) {
+	privileged, tlb.bank = r0;
+	# next;
+}
+
+state (0x103) {
+	privileged, tlb.flags = r0;
+	# next;
+}

@@ -39,7 +39,7 @@ module.exports = function(grunt) {
 				structjs: "node_modules/struct.js/grammar/struct.peg",
 
 				layout: "microcode/layout.txt",
-				source: "microcode/source.txt",
+				source: "microcode/micro/main.txt",
 				
 				output: {
 					"binary": "web/microcode.bin"

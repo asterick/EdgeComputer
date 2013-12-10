@@ -12,13 +12,11 @@ module.exports = function(grunt) {
 		grunt.log.write('Compiling microcode', this.data.source, "\n");
 
 		var options = { output: "parser" },
-				source = grunt.file.read(this.data.source),
 				structs = PEG.buildParser(grunt.file.read(this.data.structjs), options),
-				parser = PEG.buildParser(grunt.file.read(this.data.grammar), options),
 				layout = structs.parse(grunt.file.read(this.data.layout)),
-				ast = parser.parse(source);
+				grammar = PEG.buildParser(grunt.file.read(this.data.grammar), options);
 
-		var output = compile(layout, ast);
+		var output = compile(layout, function (name) { return grammar.parse(grunt.file.read(name)); }, this.data.source);
 
 		var outputs = this.data.output;
 		Object.keys(outputs).forEach(function (format) {

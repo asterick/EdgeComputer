@@ -1,0 +1,24 @@
+/*
+ * Register mapping:
+ * R0-R5: General purpose registers
+ * R6-R7: Temporary registers
+ * A0-A2: General purpose addressing registers
+ * A3:		Temporary
+ * A4:    Stack pointer
+ * A5:    Service stack pointer
+ * A6:    Program Cursor
+ * A7:    Interrupt service table
+ */
+
+import "microcode/micro/macros.txt"
+import "microcode/micro/service.txt"
+import "microcode/micro/block.txt"
+
+// Shift opcode
+state (0x1FF) {
+	// Shifted opcode
+	r7 = 0x0200, r7.l = [a7++], next(r7);
+}
+
+// Set all unmapped instructions as noops
+default (0x100, 0x2FF) { # next ; }
