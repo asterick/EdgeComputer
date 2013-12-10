@@ -92,9 +92,10 @@ function encode(microcode) {
 				break ;
 			case 'address_reg':
 				assign("l_term", op.byte === "high" ? L_TERM_ADDR_HIGH : L_TERM_ADDR_LOW);
-				assign("l_select", op.register);
+				assign("l_select", op.register.index);
 				break ;
-
+			default:
+				throw new ("Cannot use " + op.type + " as l-term");
 		}
 	}
 
@@ -114,6 +115,8 @@ function encode(microcode) {
 			case 'fault_code':
 				assign("r_term", R_TERM_FAULT_CODE);
 				break ;
+			default:
+				throw new ("Cannot use " + op.type + " as r-term");
 		}
 	}
 
@@ -121,7 +124,7 @@ function encode(microcode) {
 		code.targets.forEach(function (target) {
 			switch (target.type) {
 			case 'address_reg':
-				assign('z_reg', target.register);
+				assign('z_reg', target.register.index);
 				assign('latch_zreg', (target.byte === 'high') ? ZREG_ADDR_HIGH : ZREG_ADDR_LOW);
 				break ;
 			case 'register':
@@ -149,6 +152,8 @@ function encode(microcode) {
 				assign('latch_aflags', TRUE);
 				assign('latch_zflags', FALSE);	// Prevent double latching
 				break ;
+			default:
+				throw new ("Cannot use " + op.type + " as ALU target");
 			}
 		});
 
@@ -185,7 +190,7 @@ function encode(microcode) {
 		assign("mem_active", TRUE);
 		assign("mem_byte", code.register.byte === "high" ? BYTE_HIGH : BYTE_LOW);
 		assign("mem_dir", code.direction === "read" ? MEMORY_READ : MEMORY_WRITE);
-		assign("mem_addr", code.memory.address);
+		assign("mem_addr", code.memory.address.index);
 		assign("r_select", code.register.register.index);
 		assign("mem_addr_op", MEMORY_OPS[code.memory.operation]);
 		assign("disable_tlb", code.memory.physical ? TRUE : FALSE);
@@ -193,7 +198,7 @@ function encode(microcode) {
 
 	function assignMemoryOp(code) {
 		assign("mem_active", FALSE);
-		assign("mem_addr", code.address);
+		assign("mem_addr", code.address.index);
 		assign("mem_addr_op", MEMORY_OPS[code.operation]);
 	}
 

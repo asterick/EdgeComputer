@@ -131,7 +131,6 @@ function compile(layout, read, source, macros, opcodes) {
 	opcodes || (opcodes = {});
 	macros || (macros = {});
 
-
 	function process(ast) {
 		ast.forEach(function (op) {
 			switch (op.type) {
@@ -155,7 +154,7 @@ function compile(layout, read, source, macros, opcodes) {
 				break ;
 
 			case "macro":
-				macros[op.name] = op.statements;
+				macros[op.name] = op;			
 				break ;
 			default:
 				throw new Error("Cannot handle " + op.type);

@@ -6,6 +6,34 @@ var util = require("./util.js"),
 		operation = require('./operation.js'),
 		base_id = 0;
 
+function macro(macro, args) {
+	if (macro.arguments.length !== args.length) {
+		throw new Error("Argument mismatch for macro " + macro.name);
+	}
+
+	function replace(state) {
+		if (!state || typeof state !== 'object') {
+			return state;
+		} else if (Array.isArray(state)) {
+			return state.map(replace);
+		} else if (!state.type || state.type !== 'identifier') {
+			var r = {}
+			util.each(state, function (v, k) { r[k] = replace(v); });
+			return r;
+		}
+
+		var idx = macro.arguments.indexOf(state.name);
+
+		if (idx < 0) {
+			throw new Error("Identifier " + state.name + "was not defined in the macro");
+		}
+
+		return args[idx];
+	}
+
+	return replace(macro.statements);
+}
+
 // Build statement chain
 function build(macros, statements, table, labels, reassigns, tail) {
 	table || (table = {});
@@ -61,9 +89,8 @@ function build(macros, statements, table, labels, reassigns, tail) {
 				if (macros[f.name] === undefined) {
 					throw new Error("Macro " + f.name + " is undefined.");
 				}
-				
-				tail = build(macros, macros[f.name], table, labels, reassigns, tail).tail;
 
+				tail = build(macros, macro(macros[f.name], f.arguments), table, labels, reassigns, tail).tail;
 				break ;
 			case 'goto':
 				var next = { type: 'key', name: f.label };

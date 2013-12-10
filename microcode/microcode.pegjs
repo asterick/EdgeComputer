@@ -18,8 +18,14 @@ opcode
   	{ return { type: "default", start:s, end: e, expressions: b }; }
 
 macro
-	= "macro"i _ name:identifier statements:block
-		{ return { type: "macro", name: name, statements: statements }; }
+	= "macro"i _ name:identifier args:identifiers statements:block
+		{ return { type: "macro", name: name, arguments: args, statements: statements }; }
+
+identifiers
+  = "(" _ a:identifier b:("," _ b:identifier { return b; })* ")" _
+    { return [a].concat(b); }
+  / 
+    { return []; }
 
 block
   = "{" _ list:statement* _ "}" _
@@ -33,8 +39,19 @@ statement
   / microcode
 
 include
-	= "#" _ name:identifier ";" _
-		{ return { type: 'include', name: name }; }
+	= "#" _ name:identifier args:arguments ";" _
+		{ return { type: 'include', name: name, arguments: args }; }
+
+arguments
+  = "(" _ a:argument b:("," _ b:argument { return b; })* ")" _
+    { return [a].concat(b); }
+  / 
+    { return []; }
+
+argument
+  = register
+  / address_reg
+  / immediate
 
 if
   = "if"i _ "(" _ immediate:"@"? _ invert:"~"? _ condition:condition ")" _ statements:block otherwise:else?
@@ -71,8 +88,8 @@ expression
   / inc_addr
 
 inc_addr
-  = "a"i r:[0-7] _  op:postOp
-    { return { type: "address_op", address: parseInt(r, 10), operation: op }; }
+  = a:address_reg  op:postOp
+    { return { type: "address_op", address: a, operation: op }; }
 
 flag
   = v:("privileged"i) _
@@ -101,8 +118,8 @@ byte
     { return "low"; }
 
 memory
-  = phy:"#"? "[" _ "a" r:[0-7] _  op:postOp "]" _
-    { return { type:"address", address: parseInt(r, 10), operation:op, physical: Boolean(phy) }; }
+  = phy:"#"? "[" _ r:address_reg op:postOp "]" _
+    { return { type: "address", address: r, operation:op, physical: Boolean(phy) }; }
 
 postOp
   = "++" _
@@ -127,7 +144,7 @@ zbus_target
     { return { type: "status" }; }
   / "flags"i _
     { return { type: "flags" }; }
-  / address_reg
+  / address_reg_byte
   / register
   / tlb_register
 
@@ -135,13 +152,9 @@ tlb_register
   = "tlb."i v:("index" / "bank" / "flags") _
     { return { type: 'tlb', register: v.toLowerCase() }; }
 
-address_reg
-  = r:"a"i r:[0-7] b:byte _
-    { return { type:"address_reg", byte: b, register: parseInt(r, 10) }; }
-
-register
-  = "r"i r:[0-7] _
-    { return { type: 'register', index: parseInt(r, 10) }; }
+address_reg_byte
+  = r:address_reg b:byte _
+    { return { type:"address_reg", byte: b, register: r }; }
 
 alu_math
   = l_bus:l_bus op:infix r_bus:r_bus carry:carry
@@ -151,7 +164,7 @@ alu_math
   / l_bus:l_bus
     { return { type: 'move', value: l_bus }; }
   / r_bus:r_bus
-    { return { type: 'binary', operation: "or", left:  { type: "immediate", value:0 }, right: r_bus, carry: false }; }
+    { return { type: 'binary', operation: "or", left: { type: "immediate", value: 0 }, right: r_bus, carry: false }; }
 
 prefix
   = ">>>" _
@@ -174,14 +187,12 @@ infix
     { return "or"; }
 
 l_bus
-  = n:number
-    { return { type: "immediate", value:n }; }
-  / address_reg
+  = immediate
+  / address_reg_byte
   / register
 
 r_bus
-  = n:number
-    { return { type: "immediate", value:n }; }
+  = immediate
   / "msr"i _
     { return { type: "status" }; }
   / "fault_code"i _
@@ -194,7 +205,26 @@ carry
   / _
     { return false; }
 
-// atomic values
+// --- Replacible terms ---
+address_reg
+  = "a"i r:[0-7] _
+    { return { type: 'address', index: parseInt(r, 10) }; }
+  / ":" i:identifier
+    { return { type: 'identifier', name: i }; }
+
+register
+  = "r"i r:[0-7] _
+    { return { type: 'register', index: parseInt(r, 10) }; }
+  / ":" i:identifier
+    { return { type: 'identifier', name: i }; }
+
+immediate
+  = n:number
+    { return { type: "immediate", value:n }; }
+  / ":" i:identifier
+    { return { type: 'identifier', name: i }; }
+
+// --- atomic values ---
 identifier
 	= v:[a-zA-Z0-9_]+ _
 		{ return v.join('').toLowerCase(); }
