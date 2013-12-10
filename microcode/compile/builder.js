@@ -8,7 +8,7 @@ var util = require("./util.js"),
 
 // Does a reduction step on macros (this is kinda ugly because we don't need speed)
 function reduce(macros, statements) {
-	if (!statements) { return statements; }
+	if (!statements) { return []; }
 
 	function replace(state, macro, args) {
 		if (!state || typeof state !== 'object') {
@@ -53,6 +53,31 @@ function reduce(macros, statements) {
 	}, []);
 }
 
+function microcode(statements, table) {
+	if (!statements) { return statements; }
+
+	var last = null;
+	return statements.reduce(function (acc,f) {
+		switch (f.type) {
+		case "microcode":
+			var code = operation.encode(f.statement);
+
+			// Check if codes can be combined
+			if (operation.safe(last, code)) {
+				util.each(code, function (v, k) { last[k] = v; });
+			} else {
+				return acc.concat({ type: "microcode", code: last = code });
+			}
+			return acc;			
+		default:
+			last = null;
+			return acc.concat(f);
+		}
+	}, []);
+
+	return statements;
+}
+
 // Build statement chain
 function build(macros, statements, table, labels, reassigns, tail) {
 	table || (table = {});
@@ -79,17 +104,12 @@ function build(macros, statements, table, labels, reassigns, tail) {
 	// microcodes should be packed in the order of:
 	// flag -> flag, alu -> access, address_op
 
-	statements = reduce(macros,statements);
-	
-	// TODO: FLATTEN ALL THE MICROCODE CHUNKS INTO SINGLE INSTRUCTIONS
-
-	(statements || []).forEach(function (f) {
+	// Replace all the macros in a statement, and combine microcodes in a way that makes them easier to fit
+	microcode(reduce(macros,statements)).forEach(function (f) {
 		switch (f.type) {
 			case 'microcode':
 				var stateId = base_id++,
-						state = {};
-
-				operation.encode(state, f.statement);
+						state = f.code;
 
 				table[stateId] = state;
 				setStates({ type: 'key', name: stateId });

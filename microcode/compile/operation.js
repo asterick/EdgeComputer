@@ -2,6 +2,8 @@
  * This flattens all the non-conditional fields of an operation
  */
 
+var util = require("./util.js");
+
 var TRUE = 1,
 		FALSE = 0;
 
@@ -41,7 +43,48 @@ var ALU_OPS = {
   "sub": 7
 };
 
-function encode(output, statement) {
+function priority(code) {
+	if (!code) { return Number.MAX_VALUE; }
+
+	if (code.mem_active !== undefined) {
+		return 2; 
+	} else if (code.alu_op !== undefined) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+// Lets you know if a prior microcode is okay to combine with the next
+function safe(last, code) {
+	// Previous microcode has a higher priority operation
+	if (priority(last) >= priority(code)) {
+		return false;
+	}
+
+	// Validate that any overlapping registers are the same
+	var ok = true;
+	util.each(code, function (v, k) {
+		if (last[k] !== undefined && last[k] !== v) {
+			ok = false;
+		}
+	});
+
+	if (!ok) { return false; }
+
+	if (code.mem_addr === last.z_reg &&
+			(code.latch_zreg === ZREG_ADDR_LOW || code.latch_zreg === ZREG_ADDR_HIGH)) { 
+		return false;
+	}
+
+	// TODO: Verify that memory address and alu target are not the same
+
+	return true;
+}
+
+function encode(statement) {
+	var output = {};
+
 	function assign(key, value) {
 		if (typeof value !== "number") {
 			throw new Error("Compiler attempted to assign non number to " + key);
@@ -287,5 +330,6 @@ function encode(output, statement) {
 }
 
 module.exports = {
-	encode: encode
+	encode: encode,
+	safe: safe
 };

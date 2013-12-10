@@ -10,17 +10,6 @@
  * A7:    Interrupt service table
  */
 
-macro test(a) {
-}
-
-state (0) {
-	privileged;
-
-	r1 = fault_code;
-	goto 0;
-}
-
-/*
 import "microcode/micro/macros.txt"
 import "microcode/micro/service.txt"
 import "microcode/micro/math.txt"
@@ -34,4 +23,3 @@ state (0x1FF) {
 
 // Set all unmapped instructions as noops
 default (0x100, 0x2FF) { # next ; }
-*/
