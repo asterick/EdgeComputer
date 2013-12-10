@@ -12,6 +12,7 @@
 
 import "microcode/micro/macros.txt"
 import "microcode/micro/service.txt"
+import "microcode/micro/math.txt"
 import "microcode/micro/block.txt"
 
 // Shift opcode
