@@ -57,6 +57,9 @@ function build(macros, statements, table, labels, reassigns, tail) {
 		});
 	}
 
+	// microcodes should be packed in the order of:
+	// flag -> flag, alu -> access, address_op
+
 	(statements || []).forEach(function (f) {
 		switch (f.type) {
 			case 'microcode':
@@ -69,8 +72,6 @@ function build(macros, statements, table, labels, reassigns, tail) {
 				setStates({ type: 'key', name: stateId });
 
 				tail = state.next_state ? [] : [{ key: "next_state", target: state }];
-
-				last = f.statement.type;
 
 				break ;
 			case 'if':

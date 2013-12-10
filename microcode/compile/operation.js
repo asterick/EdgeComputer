@@ -204,11 +204,11 @@ function encode(output, statement) {
 		case 'flag':
 			output[statement.name] = TRUE;
 			break;
-		case 'access':
-			assignMemory(statement);
-			break ;
 		case 'alu':
 			assignALU(statement);
+			break ;
+		case 'access':
+			assignMemory(statement);
 			break ;
 		case 'address_op':
 			assignMemoryOp(statement);
