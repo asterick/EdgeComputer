@@ -26,7 +26,7 @@ state (0x2FF) {
 	r6 = 0; r7 = 0;
 
 	loop:
-		flags, r0 = << r0;	// Numerator shift
+		(flags, r0) = << r0;	// Numerator shift
 		if (z) {
 			r0 = r6;
 			r1 = r7;
