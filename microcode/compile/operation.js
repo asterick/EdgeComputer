@@ -85,15 +85,18 @@ function encode(output, statement) {
 				assign("l_term", L_TERM_IMM);
 				break ;
 			case 'register':
+				if (op.unit) { throw new Error("Must assign full-register when assigning register to l-bus"); }
+
 				assign("l_term", L_TERM_REG);
 				assign("l_select", op.index);
 				break ;
-			case 'address_reg':
-				assign("l_term", op.byte === "high" ? L_TERM_ADDR_HIGH : L_TERM_ADDR_LOW);
-				assign("l_select", op.register.index);
+			case 'address':
+				if (!op.unit) { throw new Error("Must assign word-register when assigning address register to l-bus"); }
+				assign("l_term", op.unit === "high" ? L_TERM_ADDR_HIGH : L_TERM_ADDR_LOW);
+				assign("l_select", op.index);
 				break ;
 			default:
-				throw new ("Cannot use " + op.type + " as l-term");
+				throw new Error("Cannot use " + op.type + " as l-term");
 		}
 	}
 
@@ -104,6 +107,8 @@ function encode(output, statement) {
 				assign("r_term", R_TERM_IMM);
 				break ;
 			case 'register':
+				if (op.unit) { throw new Error("Must assign full-register when assigning register to l-bus"); }
+
 				assign("r_term", R_TERM_REGISTER);
 				assign("r_select", op.index);
 				break ;
@@ -114,18 +119,21 @@ function encode(output, statement) {
 				assign("r_term", R_TERM_FAULT_CODE);
 				break ;
 			default:
-				throw new ("Cannot use " + op.type + " as r-term");
+				throw new Error("Cannot use " + op.type + " as r-term");
 		}
 	}
 
 	function assignALU(code) {
 		code.targets.forEach(function (target) {
 			switch (target.type) {
-			case 'address_reg':
-				assign('z_reg', target.register.index);
-				assign('latch_zreg', (target.byte === 'high') ? ZREG_ADDR_HIGH : ZREG_ADDR_LOW);
+			case 'address':
+				if (!target.unit) { throw new Error("Must assign word when assigning address register from z-bus"); }
+
+				assign('z_reg', target.index);
+				assign('latch_zreg', (target.unit === 'high') ? ZREG_ADDR_HIGH : ZREG_ADDR_LOW);
 				break ;
 			case 'register':
+				if (target.unit) { throw new Error("Must assign full-register when assigning register from z-bus"); }
 				assign('z_reg', target.index);
 				assign('latch_zreg', ZREG_REGISTER);
 				break ;
@@ -151,7 +159,7 @@ function encode(output, statement) {
 				assign('latch_zflags', FALSE);	// Prevent double latching
 				break ;
 			default:
-				throw new ("Cannot use " + op.type + " as ALU target");
+				throw new Error("Cannot use " + target.type + " as ALU target");
 			}
 		});
 
@@ -169,32 +177,92 @@ function encode(output, statement) {
 			break ;
 		case 'move':
 			assign('alu_op', ALU_OPS.or);
-			assignLBus(code.operation.value);
 			assign('carry', FALSE);
 
-			if (code.operation.value.type === 'immediate') {
-				assignRBus(code.operation.value);
-			} else {
+			switch (code.operation.value.type) {
+			case "register":
+			case "address":
+				assignLBus(code.operation.value);
 				assignRBus({ type: "immediate", value: 0 });
+				break ;
+			case 'status':
+			case 'fault_code':
+				assignLBus({ type: "immediate", value: 0 });
+				assignRBus(code.operation.value);
+				break ;
+			case "immediate":
+				assignLBus(code.operation.value);
+				assignRBus(code.operation.value);
+				break ;
+			default:
+				throw new Error("Cannot use " + code.operation.value.type + " as move source");
 			}
+
 			break ;
+
 		default:
-			console.log(code.operation);
+			throw new Error("Cannot use " + code.operation.type + " as ALU source");
 			break ;
 		}
 	}
 
 	function assignMemory(code) {
+		var memory, register, dir;
+
+		if (code.operation.value.type === "memory") {
+			memory = code.operation.value;
+			register = code.targets[0];
+			dir = MEMORY_READ;
+		} else {
+			register = code.operation.value;
+			memory = code.targets[0];
+			dir = MEMORY_WRITE;
+		}
+
+		if (memory.address.type !== "address" || memory.address.unit) {
+			throw new Error("Source address must be a full width address register");
+		}
+
+		if (register.type !== "register" || !register.unit) {
+			throw new Error("Memory operators require register source/target w/byte selected");
+		}
+
 		assign("mem_active", TRUE);
-		assign("mem_byte", code.register.byte === "high" ? BYTE_HIGH : BYTE_LOW);
-		assign("mem_dir", code.direction === "read" ? MEMORY_READ : MEMORY_WRITE);
-		assign("mem_addr", code.memory.address.index);
-		assign("r_select", code.register.register.index);
-		assign("mem_addr_op", MEMORY_OPS[code.memory.operation]);
-		assign("disable_tlb", code.memory.physical ? TRUE : FALSE);
+		assign("mem_dir", dir);
+		assign("mem_addr", memory.address.index);
+		assign("disable_tlb", memory.physical ? TRUE : FALSE);
+		assign("mem_addr_op", MEMORY_OPS[memory.operation]);
+		assign("mem_byte", register.byte === "high" ? BYTE_HIGH : BYTE_LOW);
+		assign("r_select", register.index);
+	}
+
+	function assignComplex(code) {
+		if (code.targets.length === 1 &&
+				code.operation.type === "move" &&
+				(code.operation.value.type === "memory" || code.targets[0].type === "memory")) {
+			assignMemory(code);
+		} else {
+			assignALU(code);
+		}
 	}
 
 	function assignMemoryOp(code) {
+		// If we are messing with an operator that is not a raw address, treat as ALU operator
+		if (code.address.type !== 'address' || code.address.unit) {
+			assignComplex({ type: 'assignment',
+			  targets: [ code.address ],
+  			operation: { 
+  				type: 'binary',
+     			operation: code.operation === "increment" ? "add" : "sub",
+     			left: code.address,
+		     	right: { type: 'immediate', value: 1 },
+     			carry: false 
+     		} 
+     	});
+
+     	return ;
+		}
+
 		assign("mem_active", FALSE);
 		assign("mem_addr", code.address.index);
 		assign("mem_addr_op", MEMORY_OPS[code.operation]);
@@ -204,13 +272,10 @@ function encode(output, statement) {
 		case 'flag':
 			output[statement.name] = TRUE;
 			break;
-		case 'alu':
-			assignALU(statement);
+		case 'assignment':
+			assignComplex(statement);
 			break ;
-		case 'access':
-			assignMemory(statement);
-			break ;
-		case 'address_op':
+		case 'incrementer':
 			assignMemoryOp(statement);
 			break ;
 		default:

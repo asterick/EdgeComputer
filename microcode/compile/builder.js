@@ -14,7 +14,7 @@ function reduce(macros, statements) {
 		if (!state || typeof state !== 'object') {
 			return state;
 		} else if (Array.isArray(state)) {
-			return state.map(replace);
+			return state.map(function(v) { return replace(v, macro, args); });
 		} else if (!state.type || state.type !== 'identifier') {
 			var r = {}
 			util.each(state, function (v, k) { r[k] = replace(v, macro, args); });
@@ -25,6 +25,10 @@ function reduce(macros, statements) {
 
 		if (idx < 0) {
 			throw new Error("Identifier " + state.name + " was not defined in the macro");
+		}
+
+		if (args[idx].type === "identifier") {
+			throw new Error("Cannot reassign to identifier");
 		}
 
 		return args[idx];
@@ -76,10 +80,9 @@ function build(macros, statements, table, labels, reassigns, tail) {
 	// flag -> flag, alu -> access, address_op
 
 	statements = reduce(macros,statements);
-
+	
 	// TODO: FLATTEN ALL THE MICROCODE CHUNKS INTO SINGLE INSTRUCTIONS
 
-	console.log (statements);
 	(statements || []).forEach(function (f) {
 		switch (f.type) {
 			case 'microcode':

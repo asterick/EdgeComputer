@@ -45,8 +45,8 @@ macro isr {
 
 	// Load vector index
 	r7 = 0x3FFF & fault_code;
-	(a6.l, flags) = a7.l + r7;
-	(a6.h) = a7.h + 0 + c;
+	a6.l, flags = a7.l + r7;
+	a6.h = a7.h + 0 + c;
 
 	# isr_jump;
 }
