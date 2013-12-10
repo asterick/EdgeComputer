@@ -6,19 +6,18 @@ var util = require("./util.js"),
 		operation = require('./operation.js'),
 		base_id = 0;
 
-function macro(macro, args) {
-	if (macro.arguments.length !== args.length) {
-		throw new Error("Argument mismatch for macro " + macro.name);
-	}
+// Does a reduction step on macros (this is kinda ugly because we don't need speed)
+function reduce(macros, statements) {
+	if (!statements) { return statements; }
 
-	function replace(state) {
+	function replace(state, macro, args) {
 		if (!state || typeof state !== 'object') {
 			return state;
 		} else if (Array.isArray(state)) {
 			return state.map(replace);
 		} else if (!state.type || state.type !== 'identifier') {
 			var r = {}
-			util.each(state, function (v, k) { r[k] = replace(v); });
+			util.each(state, function (v, k) { r[k] = replace(v, macro, args); });
 			return r;
 		}
 
@@ -31,7 +30,23 @@ function macro(macro, args) {
 		return args[idx];
 	}
 
-	return replace(macro.statements);
+	// Locate all include statements, and replace them inline
+	return statements.reduce(function (acc, f) {
+		switch (f.type) {
+		case 'include':
+			var macro = macros[f.name];
+
+			if (!macro) {
+				throw new Error("Macro " + f.name + " is undefined.");
+			} else if (macro.arguments.length !== f.arguments.length) {
+				throw new Error("Argument mismatch for macro " + macro.name);
+			}
+
+			return acc.concat(reduce(macros, replace(macro.statements, macro, f.arguments)));
+		default:
+			return acc.concat(f);
+		}
+	}, []);
 }
 
 // Build statement chain
@@ -60,6 +75,11 @@ function build(macros, statements, table, labels, reassigns, tail) {
 	// microcodes should be packed in the order of:
 	// flag -> flag, alu -> access, address_op
 
+	statements = reduce(macros,statements);
+
+	// TODO: FLATTEN ALL THE MICROCODE CHUNKS INTO SINGLE INSTRUCTIONS
+
+	console.log (statements);
 	(statements || []).forEach(function (f) {
 		switch (f.type) {
 			case 'microcode':
@@ -70,8 +90,7 @@ function build(macros, statements, table, labels, reassigns, tail) {
 
 				table[stateId] = state;
 				setStates({ type: 'key', name: stateId });
-
-				tail = state.next_state ? [] : [{ key: "next_state", target: state }];
+				tail = [{ key: "next_state", target: state }];
 
 				break ;
 			case 'if':
@@ -89,13 +108,6 @@ function build(macros, statements, table, labels, reassigns, tail) {
 				setStates(branch, true);
 				tail = onFalse.tail.concat(onTrue.tail);
 
-				break ;
-			case 'include':
-				if (macros[f.name] === undefined) {
-					throw new Error("Macro " + f.name + " is undefined.");
-				}
-
-				tail = build(macros, macro(macros[f.name], f.arguments), table, labels, reassigns, tail).tail;
 				break ;
 			case 'goto':
 				var next;
