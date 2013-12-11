@@ -3,8 +3,7 @@ state (0x200) {
 	loop:
 		r7.l = [a0++];
 		[a1++] = r7.l;
-		r0 = r0 - 1;
-		if (@~c) { goto loop; }
+		r0 = r0 - 1; if (@~c) { goto loop; }
 	# next ;
 }
 
@@ -12,8 +11,7 @@ state (0x201) {
 	loop:
 		r7.l = [a0--];
 		[a1++] = r7.l;
-		r0 = r0 - 1; 
-		if (@~c) { goto loop; }
+		r0 = r0 - 1; if (@~c) { goto loop; }
 	# next ;
 }
 
@@ -21,8 +19,7 @@ state (0x202) {
 	loop:
 		r7.l = [a0++];
 		[a1--] = r7.l;
-		r0 = r0 - 1; 
-		if (@~c) { goto loop; }
+		r0 = r0 - 1; if (@~c) { goto loop; }
 	# next ;
 }
 
@@ -30,8 +27,7 @@ state (0x203) {
 	loop:
 		r7.l = [a0--];
 		[a1--] = r7.l;
-		r0 = r0 - 1; 
-		if (@~c) { goto loop; }
+		r0 = r0 - 1; if (@~c) { goto loop; }
 	# next ;
 }
 
@@ -39,8 +35,7 @@ state (0x204) {
 	loop:
 		r7.l = [a0++];
 		[a1] = r7.l;
-		r0 = r0 - 1; 
-		if (@~c) { goto loop; }
+		r0 = r0 - 1; if (@~c) { goto loop; }
 	# next ;
 }
 
