@@ -44,12 +44,19 @@ var ALU_OPS = {
 };
 
 function priority(code) {
+	// Undefined codes cannot be combined
 	if (!code) { return Number.MAX_VALUE; }
 
-	if (code.mem_active !== undefined) {
-		return 2; 
+	// Incrementer latches after memory
+	if (code.mem_addr_op) {
+		return 3;
+	// Memory occurs after alu
+	} else if (code.mem_active !== undefined) {
+		return  2;
+	// ALU occurs before flags
 	} else if (code.alu_op !== undefined) {
 		return 1;
+	// Flags
 	} else {
 		return 0;
 	}
@@ -274,9 +281,10 @@ function encode(statement) {
 		assign("mem_dir", dir);
 		assign("mem_addr", memory.address.index);
 		assign("disable_tlb", memory.physical ? TRUE : FALSE);
-		assign("mem_addr_op", MEMORY_OPS[memory.operation]);
 		assign("mem_byte", register.byte === "high" ? BYTE_HIGH : BYTE_LOW);
 		assign("r_select", register.index);
+
+		if (memory.operation) { assign("mem_addr_op", MEMORY_OPS[memory.operation]); }
 	}
 
 	function assignComplex(code) {
@@ -306,7 +314,6 @@ function encode(statement) {
      	return ;
 		}
 
-		assign("mem_active", FALSE);
 		assign("mem_addr", code.address.index);
 		assign("mem_addr_op", MEMORY_OPS[code.operation]);
 	}

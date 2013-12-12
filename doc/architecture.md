@@ -68,8 +68,8 @@ Index |  Name | Bits | Description
       |       |    1 | Read allowed
       |       |    0 | Write allowed
 
-TLB active when:  (addr[23:12] == bank[15:4]) && (pid == bank[3:0]) && (flags[2]) && (!RD || flags[1]) && (!WR || flags[0])
-Physical address: { flags[15:4], addr[11:0]  }
+TLB active when:  (addr[23:12] == bank.vaddr) && (pid == bank.pid) && (flags.valid) && (!RD || flags.read) && (!WR || flags.write)
+Physical address: { flags.paddr, addr[11:0]  }
 
 Memory map
 ----------

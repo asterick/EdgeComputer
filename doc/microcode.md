@@ -52,8 +52,15 @@ The compiler handles inserting opcodes into the 8Kx57 rom, currently with a very
 If I ever hit my instruction limit, I'll make it do tail optimization to reduce the number of
 repeated instructions required for doing things like loading the next byte.
 
-**NOTE:** It does not currently support the concept of a shifted opcode, although it is supported
-by the microcode as it stands right now.
+After a major refactor, the compiler is a little smarter.  It features inlining macros that support
+most of the atomic terms (registers and immediates).  It also does not allow compounded statements
+any longer, as the fitter will not combine sequential statements that are safe to execute in the
+pipeline (legibility / macroing).
+
+Wishlist
+--------
+ * Tail optimizing fitter (space)
+ * Safe microcode block reordering (speed, can be done by hand)
 
 [Microcode layout](../microcode/source.txt)
 [Current source](../microcode/layout.txt)

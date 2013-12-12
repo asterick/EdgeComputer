@@ -156,7 +156,7 @@ term
   / "flags"i _
     { return { type: "flags" }; }
   / phy:"#"? "[" _ r:address op:postOp? "]" _
-    { return { type: "memory", address: r, operation:op || "none", physical: Boolean(phy) }; }
+    { return { type: "memory", address: r, operation:op || null, physical: Boolean(phy) }; }
   / i:identifier
     { return { type: "identifier", name: i }; }
 

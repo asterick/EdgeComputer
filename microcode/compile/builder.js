@@ -66,7 +66,7 @@ function microcode(statements, table) {
 			if (operation.safe(last, code)) {
 				util.each(code, function (v, k) { last[k] = v; });
 			} else {
-				return acc.concat({ type: "microcode", code: last = code });
+				return acc.concat({ type: "instruction", code: last = code });
 			}
 			return acc;			
 		default:
@@ -74,8 +74,6 @@ function microcode(statements, table) {
 			return acc.concat(f);
 		}
 	}, []);
-
-	return statements;
 }
 
 // Build statement chain
@@ -107,13 +105,12 @@ function build(macros, statements, table, labels, reassigns, tail) {
 	// Replace all the macros in a statement, and combine microcodes in a way that makes them easier to fit
 	microcode(reduce(macros,statements)).forEach(function (f) {
 		switch (f.type) {
-			case 'microcode':
-				var stateId = base_id++,
-						state = f.code;
+			case 'instruction':
+				var stateId = base_id++;
 
-				table[stateId] = state;
+				table[stateId] = f.code;
 				setStates({ type: 'key', name: stateId });
-				tail = [{ key: "next_state", target: state }];
+				tail = [{ key: "next_state", target: f.code }];
 
 				break ;
 			case 'if':
@@ -182,15 +179,16 @@ function make(macros, statements) {
 
 	function breakOut(term) {
 		switch (term.type) {
-
 		// Force NOP in the case where a condition goes anywhere other than a key
 		case 'condition':
-		case 'state':
-			var stateId = base_id++,
-					nop = {};
+			// Recursive check 
+			term.true = breakOut(term.true);
+			term.false = breakOut(term.false);
 
-			nop.next_state = term;
-			state.table[stateId] = nop;
+		case 'state':
+			var stateId = base_id++;
+
+			state.table[stateId] = { next_state: term };
 
 			return { type: 'key', name: stateId };
 
@@ -202,14 +200,21 @@ function make(macros, statements) {
 
 	// Break out the terms chained conditionals (delinquent case)
 	util.each(state.table, function (o, k) {
-		if (o.next_state.type !== "condition") { return ;}
-		o.next_state.true = breakOut(o.next_state.true);
-		o.next_state.false = breakOut(o.next_state.false);
+		if (o.next_state.type === "condition") {
+			o.next_state.true = breakOut(o.next_state.true);
+			o.next_state.false = breakOut(o.next_state.false);
+		}
+	});
+
+	var remainder = [];
+	util.each(state.table, function (o, k) {
+		if (o.next_state.type === 'state') { remainder.push(k); }
 	});
 
 	return {
 		table: state.table, 
-		entry: state.entry
+		entry: state.entry,
+		remainder: remainder
 	}
 }
 
