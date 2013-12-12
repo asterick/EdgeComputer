@@ -1,6 +1,5 @@
 /**
  ** This is our fitter / conditional mapper
- ** TODO: FIND NON-CONDITIONAL BRANCHES TO NOPS
  **/
 
 var	make = require("./builder.js"),
@@ -139,7 +138,7 @@ function describe(o) {
 		if (Array.isArray(o)) {
 			return "[" + o.map(describe).join(",") + "]";
 		} else {
-			return "{" + Object.keys(o).sort().map(function (k) {
+			return "{" + Object.keys(o).filter(function (k) { return k[0] !== '$' }).sort().map(function (k) {
 				return describe(k)+":"+describe(o[k]);
 			}).join(",") + "}";
 		}
@@ -161,14 +160,14 @@ function combine(table, remainders, opcodes) {
 		if (!table[first]) { continue ; }
 
 		// Locate states that are similar
-		var name = describe(table[first]),
+		var name = table[first].$$hash || (table[first].$$hash = describe(table[first])),
 				similar = [];
 
 		// Locate all states that have an identical structure
 		util.each(table, function (code, second, table) {
 			if (first === second) { return ; }
 			
-			var other_name = describe(code);
+			var other_name = code.$$hash || (code.$$hash = describe(code));
 
 			if (other_name === name) {
 				similar.push(second);
@@ -188,9 +187,12 @@ function combine(table, remainders, opcodes) {
 				case 'key':
 					if (similar.indexOf(next.name) >= 0) {
 						next.name = first;			// Replace with first found
+
 						remainders.push(key);
+						delete code.$$hash;
 					} else if (name === first) {
 						remainders.push(key);
+						delete code.$$hash;
 					}
 				}
 			}
@@ -207,7 +209,23 @@ function combine(table, remainders, opcodes) {
 		});
 	}
 
-	return table;
+	// Delete hashes
+	util.each(table, function (v) { delete v.$$hash; });
+}
+
+function reduce(table) {
+	util.each(table, function (op) {
+		// Filter out simple branch to a no-op
+		while (op.next_state.type === 'key') {
+			var next = table[op.next_state.name],
+					keys = Object.keys(next);
+
+			if (keys.length !== 1 || keys[0] !== 'next_state') { break ; }
+
+			op.next_state = next.next_state;
+			break ;
+		}
+	});
 }
 
 function compile(layout, read, source, macros, opcodes) {
@@ -259,7 +277,8 @@ function compile(layout, read, source, macros, opcodes) {
 	process(ast);
 
 	// Do tail optimization
-	table = combine(table, remainders, opcodes);
+	combine(table, remainders, opcodes);
+	reduce(table);
 
 	// Fit all the opcodes into the state table
 	return fit(layout, table, opcodes);
