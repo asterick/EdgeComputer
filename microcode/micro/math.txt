@@ -19,7 +19,6 @@ state (0x2FE) {
 	# next;
 }
 
-/*
 // Divide A, B = A / B
 state (0x2FF) {
 	// r0 = n, r1 = d, r6 = q, r7 = r
@@ -43,4 +42,3 @@ state (0x2FF) {
 		}
 		goto loop;
 }
-*/

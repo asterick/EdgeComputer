@@ -1,24 +1,25 @@
 /**
  ** This is our fitter / conditional mapper
- ** Should be revamped for tail optimzation
+ ** TODO: FIND NON-CONDITIONAL BRANCHES TO NOPS
  **/
 
 var	make = require("./builder.js"),
 		util = require("./util.js"),
 		heap = require("./heap.js");
 
-function fit(layout, opcodes) {
+var MICROCODE_ROM 	= 0x2000,
+		CONDITION_CODES = { "never": 0, "hi": 1, "gt": 2, "ge": 3, "c": 4, "z": 5, "n": 6, "v": 7 };;
+
+function fit(layout, table, opcodes) {
 	// Compiler constants
-	var MICROCODE_ROM 	= 0x2000,
-			MICROCODE_WORD = (new layout())._data.byteLength,
-			CONDITION_CODES = { "never": 0, "hi": 1, "gt": 2, "ge": 3, "c": 4, "z": 5, "n": 6, "v": 7 };;
+	var MICROCODE_WORD = (new layout())._data.byteLength;
 
 	// Allocation and output variables
 	var memory = new Uint8Array(MICROCODE_ROM * MICROCODE_WORD)
 			allocation = new heap(MICROCODE_ROM);
 
 	// Allocate opcodes from state machine
-	util.each(opcodes, function (opcode, i) {
+	Object.keys(opcodes).forEach(function (i) {
 		allocation.clear(parseInt(i));
 	});
 
@@ -26,8 +27,7 @@ function fit(layout, opcodes) {
 	util.each(opcodes, function (opcode, i) {
 		var i = parseInt(i,10);
 
-		var table = opcode.table,
-				placed = {};
+		var placed = {};
 
 		function getSingle(key) {
 			var id;
@@ -122,8 +122,8 @@ function fit(layout, opcodes) {
 			}
 		}
 
-		mark(i, opcodes[i].entry);
-		place(i, opcodes[i].entry);
+		mark(i, opcodes[i]);
+		place(i, opcodes[i]);
 	});
 
 	console.log("Microcode placed:", (allocation.used / MICROCODE_ROM * 100).toFixed(2) + "%", "used");
@@ -131,9 +131,90 @@ function fit(layout, opcodes) {
 	return memory;
 }
 
+// Create a key for comparing objects (json)
+function describe(o) {
+	if (typeof o === "string") {
+		return JSON.stringify(o);
+	} else if (typeof o === "object") {
+		if (Array.isArray(o)) {
+			return "[" + o.map(describe).join(",") + "]";
+		} else {
+			return "{" + Object.keys(o).sort().map(function (k) {
+				return describe(k)+":"+describe(o[k]);
+			}).join(",") + "}";
+		}
+	} else if (typeof o === "boolean") {
+		return o ? "true" : "false";
+	}	else if (typeof o === "number") {
+		return o.toString();
+	} else {
+		return (o === undefined) ? "undefined" : "null";
+	}
+}
+
+function combine(table, remainders, opcodes) {
+	while (remainders.length) {
+		// Remove first remainder from the list
+		var first = remainders.shift();
+
+		// validate that this has already been optimized out
+		if (!table[first]) { continue ; }
+
+		// Locate states that are similar
+		var name = describe(table[first]),
+				similar = [];
+
+		// Locate all states that have an identical structure
+		util.each(table, function (code, second, table) {
+			if (first === second) { return ; }
+			
+			var other_name = describe(code);
+
+			if (other_name === name) {
+				similar.push(second);
+			}
+		});
+
+		// This is a unique state (thus it no longer needs optimization)
+		if (similar.length === 0) { continue ; }
+
+		util.each(table, function (code, key) {
+			function replace(next) {
+				switch (next.type) {
+				case 'condition':
+					replace(next.true);
+					replace(next.false);
+					return ;
+				case 'key':
+					if (similar.indexOf(next.name) >= 0) {
+						next.name = first;			// Replace with first found
+						remainders.push(key);
+					} else if (name === first) {
+						remainders.push(key);
+					}
+				}
+			}
+
+			replace(code.next_state);
+		});
+
+		// Remove dangling states
+		similar.forEach(function (key) {
+			util.each(opcodes, function (v, i) {
+				if (v === key) { opcodes[i] = first; }
+			});
+			delete table[key];
+		});
+	}
+
+	return table;
+}
+
 function compile(layout, read, source, macros, opcodes) {
 	var ast = read(source),
-			def_op, i;
+			table = {},
+			remainders = [],
+			op_state, i;
 
 	opcodes || (opcodes = {});
 	macros || (macros = {});
@@ -150,13 +231,19 @@ function compile(layout, read, source, macros, opcodes) {
 					throw new Error("State 0x" + op.code.toString(16) + " is already defined");
 				}
 
-				opcodes[op.code] = make(macros, op.expressions);
+				op_state = make(macros, op.expressions, table);
+				remainders.push.apply(remainders,op_state.remainder);
+
+				opcodes[op.code] = op_state.entry;
 				break ;
 
 			case "default":
-				def_op = make(macros, op.expressions);
+				// Attach to global state table
+				op_state = make(macros, op.expressions, table);
+				remainders.push.apply(remainders,op_state.remainder);
+
 				for (i = op.start; i <= op.end; i++) {
-					opcodes[i] || (opcodes[i] = def_op);
+					opcodes[i] || (opcodes[i] = op_state.entry);
 				}
 				break ;
 
@@ -171,8 +258,11 @@ function compile(layout, read, source, macros, opcodes) {
 
 	process(ast);
 
+	// Do tail optimization
+	table = combine(table, remainders, opcodes);
+
 	// Fit all the opcodes into the state table
-	return fit(layout, opcodes);
+	return fit(layout, table, opcodes);
 }
 
 module.exports = {

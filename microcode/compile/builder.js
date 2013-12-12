@@ -1,10 +1,19 @@
 /**
  ** This generates a fittable state mapping
+ ** TODO: Add microcode reordering for speed
  **/
 
 var util = require("./util.js"),
 		operation = require('./operation.js'),
 		base_id = 0;
+
+function peek_id() {
+	return base_id.toString();
+}
+
+function next_id() {
+	return (base_id++).toString();
+}
 
 // Does a reduction step on macros (this is kinda ugly because we don't need speed)
 function reduce(macros, statements) {
@@ -78,19 +87,18 @@ function microcode(statements, table) {
 
 // Build statement chain
 function build(macros, statements, table, labels, reassigns, tail) {
-	table || (table = {});
 	tail || (tail = []);
 	labels || (labels = {});
 	reassigns || (reassigns = []);
 
-	var entry = base_id;
+	var entry = peek_id();
 
 	function setStates(next, branch) {
 		// Insert NOP when nessessary
 
 		if (branch && tail.length === 0) {
 			var state = {};
-			table[base_id++] = state;
+			table[next_id()] = state;
 			tail = [{ key: "next_state", target: state }];
 		}
 
@@ -106,7 +114,7 @@ function build(macros, statements, table, labels, reassigns, tail) {
 	microcode(reduce(macros,statements)).forEach(function (f) {
 		switch (f.type) {
 			case 'instruction':
-				var stateId = base_id++;
+				var stateId = next_id();
 
 				table[stateId] = f.code;
 				setStates({ type: 'key', name: stateId });
@@ -149,7 +157,7 @@ function build(macros, statements, table, labels, reassigns, tail) {
 				tail = [];
 				break ;
 			case 'label':
-				labels[f.label] = base_id;
+				labels[f.label] = peek_id();
 				break ;
 			default:
 				throw new Error("Unhandled AST element: " + f.type);
@@ -159,8 +167,8 @@ function build(macros, statements, table, labels, reassigns, tail) {
 	return { table: table, tail: tail, entry: entry, reassigns: reassigns, labels: labels };
 }
 
-function make(macros, statements) {
-	var state = build(macros, statements);
+function make(macros, statements, table) {
+	var state = build(macros, statements, table);
 
 	// Remap labels to their next state address
 	state.reassigns.forEach(function (r) {
@@ -186,7 +194,7 @@ function make(macros, statements) {
 			term.false = breakOut(term.false);
 
 		case 'state':
-			var stateId = base_id++;
+			var stateId = next_id();
 
 			state.table[stateId] = { next_state: term };
 
@@ -212,7 +220,6 @@ function make(macros, statements) {
 	});
 
 	return {
-		table: state.table, 
 		entry: state.entry,
 		remainder: remainder
 	}
