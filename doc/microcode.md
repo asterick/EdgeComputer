@@ -48,18 +48,15 @@ Total bit size: **56** ( _7 bytes_ )
 The compiler
 ------------
 
-The compiler handles inserting opcodes into the 8Kx57 rom, currently with a very naive fitter.
-If I ever hit my instruction limit, I'll make it do tail optimization to reduce the number of
-repeated instructions required for doing things like loading the next byte.
+The compiler handles inserting opcodes into the 8Kx57 rom.  It currently supports 
+replacement macros, as well as some rudimentary optimization (although it can always
+get better)
 
-After a major refactor, the compiler is a little smarter.  It features inlining macros that support
-most of the atomic terms (registers and immediates).  It also does not allow compounded statements
-any longer, as the fitter will not combine sequential statements that are safe to execute in the
-pipeline (legibility / macroing).
+The ultimate goal is to create a microcode with some basic crypto and arithmatic functions
+without compromizing on things like addressing modes and such.
 
 Wishlist
 --------
- * Tail optimizing fitter (space)
  * Safe microcode block reordering (speed, can be done by hand)
 
 [Microcode layout](../microcode/source.txt)

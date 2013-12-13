@@ -18,7 +18,7 @@ state (0x101) {
 	           r7.l = [a5--];
 	a6.l = r7; r7.h = [a5--];
 	           r7.l = [a5--];
-  msr = r7;  r7.h = [a5--];
+  status = r7;  r7.h = [a5--];
 	           r7.l = [a5--];
   r0 = r7;
 

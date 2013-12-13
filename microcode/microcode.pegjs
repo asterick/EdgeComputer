@@ -147,7 +147,7 @@ term
   = register
   / address
   / immediate
-  / "msr"i _
+  / "status"i _
     { return { type: "status" }; }
   / "fault_code"i _
     { return { type: "fault_code" }; }
