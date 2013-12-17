@@ -7,6 +7,7 @@ CONDITION = ["EQ", "NE", "CS", "CC", "MI", "PL", "VS", "VC", "HI", "LS", "GE", "
 def GenMainTable():
 	yield "RTI"
 	yield "RET"
+	yield "NOP"
 	yield "(SHIFT1)"
 
 	# --- Stack block ---
