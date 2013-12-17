@@ -1,6 +1,36 @@
+macro push_s(reg_l, reg_h) {
+	#[a5++] = reg_h;
+	#[a5++] = reg_l;
+
+}
+
+macro pop_s(reg_l, reg_h) {
+	a5--;
+	reg_l = #[a5--];
+	reg_h = #[a5];
+}
+
+macro push(reg_l, reg_h) {
+	[a4++] = reg_h;
+	[a4++] = reg_l;
+
+}
+
+macro pop(reg_l, reg_h) {
+	a4--;
+	reg_l = [a4--];
+	reg_h = [a4];
+}
+
 macro next {
-	// Load next instruction (unshifted)
-	r7 = 0x0100; 
-	r7.l = [a7++]; 
+	r7.l = [a3++];
+	goto r7;
+}
+
+// This is called when R7 has been tampered with, or 
+// if we are branching away from a shifted op
+macro next_full {
+	r7 = 0x100; 
+	r7.l = [a3++];
 	goto r7;
 }

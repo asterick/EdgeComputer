@@ -49,11 +49,10 @@ the same register numbers for state branches to make failures easier to manage.
 
 Privileged instruction faults are considered unrecoverable and will throw an exception immediately.
 
- Bits | Field
------ | ---------------------------------
-15:12 | Address Register (TLB fault only)
- 11:2 | Vector index
-  1:0 | Zero (pre multiplied vector)
+Bits | Field
+---- | ---------------------------------
+15:4 | PC location (32-bit aligned)
+ 3:0 | Fault code
 
 TLB Registers (write-only)
 --------------------------

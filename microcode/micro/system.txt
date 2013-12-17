@@ -1,51 +1,57 @@
-// ENTER (software interrupt)
+macro isr_branch(code) {
+	// Preserve registers
+	r6 = status;
+	status = 0x0200;
+	push_s(r6.l, r6.h);	// Preserve status
+	r6 = a3.l;
+	push_s(r6.l, r6.h);	// Preserve PC
+	r6 = a3.h;
+	push_s(r6.l, r6.h);
+
+	// Branch
+	a3.l = code & 0xFFF0;
+	a3.l, flags = a3.l + a6.l;
+	a3.h = a3.h + 0 + c;
+
+	# next;
+}
+
+// Reset
+state (0) {
+	status = 0x200;			// Supervisor mode without TLB enabled
+
+	a6.l = 0; a6.h = 0; // Zero ISR
+	a3.l = 0; a3.h = 0; // Zero PC
+
+	# next_full;
+}
+
+// ISR
+state (1) {
+	# isr_branch (fault_code);
+}
+
+// ENTER (software interupt)
 state (0x100) {
-	# isr_preserve ;
-
-	// 0x1xxxx = software interrupt table
-	r7 = r0 & 0xFFFC;
-	(a6.l, flags) = a7.l + r7;
-	(a6.h) = a7.h + 0x0001 + c;
-
-	# isr_jump;
+	# isr_branch (r0);
 }
 
+// Return from interrupt
 state (0x101) {
-	privileged; a5--;
-             r7.h = [a5--];
-	           r7.l = [a5--];
-	a6.h = r7; r7.h = [a5--];
-	           r7.l = [a5--];
-	a6.l = r7; r7.h = [a5--];
-	           r7.l = [a5--];
-  status = r7;  r7.h = [a5--];
-	           r7.l = [a5--];
-  r0 = r7;
+	privileged; 
+
+	pop_s(r6.l, r6.h);	// Restore PC
+	a3.h = r6;
+	pop_s(r6.l, r6.h);
+	a3.l = r6;
+	pop_s(r6.l, r6.h);	// Restore status
+	status = r6;
 
 	# next;
 }
 
-state (0x102) {
-	a4--;
-             r7.h = [a4--];
-	           r7.l = [a4--];
-	a6.h = r7; r7.h = [a4--];
-	           r7.l = [a4--];
-	a6.l = r7;
-	# next;
-}
-
-state (0x103) {
-	privileged; tlb.index = r0;
-	# next;
-}
-
-state (0x103) {
-	privileged; tlb.bank = r0;
-	# next;
-}
-
-state (0x103) {
-	privileged; tlb.flags = r0;
-	# next;
+// Shift opcode
+state (0x1FF) {
+	// Shifted opcode 1
+	r7 = 0x0200; # next;
 }

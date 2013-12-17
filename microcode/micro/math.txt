@@ -1,44 +1,50 @@
-// Multiply BA = BA * C;
-state (0x2FE) {
-	// Zero out accumulator
-	r6 = 0; r7 = 0;
-	
+macro multiply (mul_a, mul_b, mul_c, res_a, res_b) {
+	res_a = 0; res_b = 0;
+
 	loop:
-		flags, r2 = >> r2; 
-		if (c) {
-			r6 = r0 + r6; r7 = r1 + r7;
-		} 
-		if (~z)  {
-			flags, r0 = << r0;
-			r1 = << r1 + c;
+		flags, mul_c = >> mul_c;
+		if (@c) {
+			res_a = res_a + mul_a; 
+			res_b = res_b + mul_b;
+		}
+		if (~z) {
+			flags, mul_a = << mul_a;
+			mul_b = << mul_b + c;
 			goto loop;
 		}
 
-	r0 = r6; r1 = r7;
+	mul_a = res_a; mul_b = res_b;
+}
 
-	# next;
+macro divide (numer, denom, quot, rem) {
+	quot = 0; rem = 0;
+
+	loop:
+		flags, numer = << numer;
+		if (~z) {
+			rem = << rem + c;			// Remainder shift in carry
+			quot = << quot + c;		// quotient = not carry
+			quot = quot ^ 1;
+			
+			flags = rem - denom;	// flags = remainder - denominator
+			if (~c) {
+				rem = rem - denom;
+			}
+			goto loop;
+		}
+
+	numer = quot;
+	denom = rem;
+}
+
+// Multiply BA = BA * C;
+state (0x2FE) {
+	# multiply (r0, r1, r2, r6, r7);
+	# next_full;
 }
 
 // Divide A, B = A / B
 state (0x2FF) {
-	// r0 = n, r1 = d, r6 = q, r7 = r
-
-	r6 = 0; r7 = 0;
-
-	loop:
-		flags, r0 = << r0;	// Numerator shift
-		if (z) {
-			r0 = r6;
-			r1 = r7;
-			# next ;
-		}
-		r7 = << r7 + c;			// Remainder shift in carry
-		flags = r7 - r1;		// flags = remainder - denominator
-		r6 = << r6 + c;			// quotient = not carry
-		r6 = r6 ^ 1;				
-		
-		if (~c) {
-			r7 = r7 - r1;
-		}
-		goto loop;
+	# divide (r0, r1, r6, r7) ;
+	# next_full ;
 }

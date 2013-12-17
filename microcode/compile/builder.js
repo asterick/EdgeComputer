@@ -33,7 +33,7 @@ function reduce(macros, statements) {
 		var idx = macro.arguments.indexOf(state.name);
 
 		if (idx < 0) {
-			throw new Error("Identifier " + state.name + " was not defined in the macro");
+			return state;
 		}
 
 		if (args[idx].type === "identifier") {
