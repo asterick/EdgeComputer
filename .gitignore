@@ -1,4 +1,5 @@
 node_modules
 logisim/*.hex
 web/microcode.bin
+instructions/*.json
 web/*.js
