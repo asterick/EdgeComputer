@@ -164,11 +164,7 @@ def GenTable(inst):
 	if len(inst) > 0x100:
 		raise Exception("Table size overflow")
 
-	inst += [{
-		"instruction": "NOP"
-	}] * (0x100 - len(inst))
-
 	return inst
 
-output = [((i+1)*0x100, GenTable(t)) for (i, t) in enumerate([GenMainTable, GenShift1Table, GenShift2Table, GenMemTable])]
+output = { hex((i+1)*0x100):GenTable(t) for (i, t) in enumerate([GenMainTable, GenShift1Table, GenShift2Table, GenMemTable]) }
 file("table.json", "w").write(json.dumps(output, indent=4))
