@@ -40,7 +40,7 @@ def GenMainTable():
 
 	for y in GENERAL + STATUS:
 		for x in GENERAL + STATUS + ["##"]:
-			if not y in x:
+			if y != x:
 				yield "MOV %s, %s" % (y, x)
 
 	# --- Arith block ---
@@ -52,7 +52,7 @@ def GenMainTable():
 			yield "%s %s, %s" % (a, GENERAL[0], y)
 
 	for x in BRANCH:
-		yield "%s +##" % x 
+		yield "%s +##" % x
 		for y in CONDITION:
 			yield "%s.%s +##" % (x, y)
 
@@ -136,7 +136,7 @@ def GenMemTable():
 	for x in BRANCH:
 		yield "%s $ea" % x
 		yield "%s [$ea]" % x
- 		
+
  		for y in CONDITION:
 			yield "%s.%s $ea" % (x, y)
 
@@ -167,7 +167,7 @@ def GenTable(inst):
 
 	print "-" * 80
 	for i in range(0,0x100,0x10):
-		print '\t'.join([inst[i] for i in range(i, i+16)])
+		print '\t'.join(inst[i:i+16])
 
 	return k
 
