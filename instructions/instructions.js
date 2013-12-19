@@ -60,8 +60,7 @@ module.exports = function (grunt) {
 									return Object.keys(grid[v]).concat(acc);
 								}, [])).sort();
 
-				var k = Object.keys(grid).concat(Object.keys(top)).map(function (v) { return v.length; }).concat(2),
-						l = 8;
+				var l = Math.max.apply(null, top.map(function (v) { return v.length; }).concat(2));
 
 				function pad(v) {
 					return (v + "          ").substr(0,l);
@@ -77,9 +76,15 @@ module.exports = function (grunt) {
 			}
 
 			function genTable1(grid) {
-				console.log("   | Term");
+				var l = Math.max.apply(null, Object.keys(grid).map(function (v) { return v.length; }).concat(2));
+
+				function pad(v) {
+					return (v + "          ").substr(0,l);
+				}
+				console.log(pad(""), "|", pad("Term"));
+
 				Object.keys(grid).forEach(function (v) {
-					console.log(v, " | ", grid[v] ? grid[v].toString(16) : "  ")
+					console.log(pad(v), " | ", pad(grid[v] ? grid[v].toString(16) : ""))
 				})
 			}
 
