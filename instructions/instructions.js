@@ -55,10 +55,21 @@ module.exports = function (grunt) {
 
 			console.log("");
 
+			function sort(a) {
+				return a.sort(function (a, b) {
+					if (a.length != b.length) {
+						return a.length - b.length;
+					}
+
+					if (a == b) { return 0 ; }
+					return (a > b) ? 1 : -1;
+				});
+			}
+
 			function genTable2(grid) {
-				var top = unique(Object.keys(grid).reduce(function (acc, v) {
+				var top = sort(unique(Object.keys(grid).reduce(function (acc, v) {
 									return Object.keys(grid[v]).concat(acc);
-								}, [])).sort();
+								}, [])));
 
 				var l = Math.max.apply(null, top.map(function (v) { return v.length; }).concat(2));
 
@@ -68,7 +79,7 @@ module.exports = function (grunt) {
 
 				console.log(pad(""), "|", top.map(pad).join(" | "));
 				console.log(pad("---------"), "|", top.map(function (v) { return pad("---------"); }).join(" | "));
-				Object.keys(grid).forEach(function (k) {
+				sort(Object.keys(grid)).forEach(function (k) {
 					console.log(pad(k), "|", top.map(function (v) {
 						return pad(grid[k][v] ? grid[k][v].toString(16) : "");
 					}).join(" | "));
@@ -76,7 +87,7 @@ module.exports = function (grunt) {
 			}
 
 			function genTable1(grid) {
-				var top = Object.keys(grid),
+				var top = sort(Object.keys(grid)),
 						l = Math.max.apply(null, Object.keys(grid).map(function (v) { return v.length; }).concat(2));
 
 				function pad(v) {

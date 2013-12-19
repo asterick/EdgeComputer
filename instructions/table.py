@@ -119,7 +119,7 @@ def GenShift2Table():
 			yield { "instruction": a, "terms": [x] }
 		for y in WORD:
 			for a in DUAL:
-				yield { "instruction": a, "terms": [x, x] }
+				yield { "instruction": a, "terms": [x, y] }
 
 def GenMemTable():
 	for x in ADDRESS + POINTER:
