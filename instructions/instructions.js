@@ -76,17 +76,17 @@ module.exports = function (grunt) {
 			}
 
 			function genTable1(grid) {
-				var l = Math.max.apply(null, Object.keys(grid).map(function (v) { return v.length; }).concat(2));
+				var top = Object.keys(grid),
+						l = Math.max.apply(null, Object.keys(grid).map(function (v) { return v.length; }).concat(2));
 
 				function pad(v) {
 					return (v + "          ").substr(0,l);
 				}
-				console.log(pad(""), "|", pad("Term"));
-				console.log(pad("--------"),"|",pad("--------"));
 
-				Object.keys(grid).forEach(function (v) {
-					console.log(pad(v), "|", pad(grid[v] ? grid[v].toString(16) : ""))
-				})
+				console.log(pad(""), "|", top.map(pad).join(" | "));
+				console.log(pad("--------"),"|",top.map(function(){return pad("--------")}).join(" | "));
+
+				console.log(pad("Op"), "|", top.map(function (v) { return pad(grid[v]); }).join(" | "));
 			}
 
 			switch (inst[0].terms.length) {
