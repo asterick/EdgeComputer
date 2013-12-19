@@ -13,7 +13,7 @@ POINTER = STACK + ["ISP"]
 
 REGISTERS = ADDRESS + GENERAL
 
-SINGLE = ["LSL", "ASL", "LSR", "EXTEND", "INC", "DEC"]
+SINGLE = ["LSL", "ASR", "LSR", "EXTEND", "INC", "DEC"]
 BITWISE = ["AND", "OR", "XOR"]
 DUAL = ["ADD", "SUB"] + BITWISE
 BRANCH = ["JMP", "CALL"]
@@ -25,6 +25,11 @@ CONDITION = ["EQ", "NE", "CS", "CC", "MI", "PL", "VS", "VC", "HI", "LS", "GE", "
 # * Missing ADC and SBC
 
 def GenMainTable():
+	# --- EXT codes ---
+	yield { "shift_table": 0x200 }
+	yield { "shift_table": 0x300 }
+
+	# --- Return from execution calls ---
 	yield { "instruction": "RTI", "terms": [] }
 	yield { "instruction": "RET", "terms": [] }
 
@@ -57,10 +62,6 @@ def GenMainTable():
 		yield { "instruction": x, "terms": ["+/-##"] }
 		for y in CONDITION:
 			yield { "instruction": x, "condition": y, "terms": ["+/-##"] }
-
-	# --- EXT codes ---
-	yield { "shift_table": 0x200 }
-	yield { "shift_table": 0x300 }
 
 	# --- Memory function ---
 	yield { "shift_table": 0x400, "effective_address": ["###"] }

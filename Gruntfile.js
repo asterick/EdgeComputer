@@ -8,6 +8,10 @@ module.exports = function(grunt) {
 			simulator: {
 				files: ["simulator/**/*"],
 				tasks: ["browserify"]
+			},
+			instructions: {
+				files: ["instructions/**/*"],
+				tasks: ["instructions"]
 			}
 		},
 
@@ -35,7 +39,9 @@ module.exports = function(grunt) {
 		// Instruction table generator
 		instructions: {
 			table: {
-				table: "instructions/table.json"
+				table: "instructions/table.json",
+				microcode: "microcode/micro/table.txt",
+				documentation: "doc/instructions"
 			}
 		},
 
