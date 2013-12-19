@@ -60,11 +60,18 @@ module.exports = function (grunt) {
 									return Object.keys(grid[v]).concat(acc);
 								}, [])).sort();
 
-				console.log("    |", top.join(" | "));
-				console.log("---", top.map(function (v) { return "| -- "}).join(""));
+				var k = Object.keys(grid).concat(Object.keys(top)).map(function (v) { return v.length; }).concat(2),
+						l = 8;
+
+				function pad(v) {
+					return (v + "          ").substr(0,l);
+				}
+
+				console.log(pad(""), "|", top.map(pad).join(" | "));
+				console.log(pad("---------"), "|", top.map(function (v) { return pad("---------"); }).join(" | "));
 				Object.keys(grid).forEach(function (k) {
-					console.log(k, "|", top.map(function (v) {
-						return grid[k][v] ? grid[k][v].toString(16) : "  ";
+					console.log(pad(k), "|", top.map(function (v) {
+						return pad(grid[k][v] ? grid[k][v].toString(16) : "");
 					}).join(" | "));
 				})
 			}
@@ -72,7 +79,7 @@ module.exports = function (grunt) {
 			function genTable1(grid) {
 				console.log("   | Term");
 				Object.keys(grid).forEach(function (v) {
-					console.log(v, "|", grid[v] ? grid[v].toString(16) : "  ")
+					console.log(v, " | ", grid[v] ? grid[v].toString(16) : "  ")
 				})
 			}
 
