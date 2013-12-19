@@ -83,7 +83,7 @@ function table(columns, write) {
 	}
 
 
-	for (var r = 0; r <= rows.length; r++) {
+	for (var r = 0; r <= rows.length + 1; r++) {
 		var line = [];
 		for (var c = 0; c < table.length; c++) {
 			line[c] = pad(table[c][r], widths[c])

@@ -26,6 +26,7 @@ Write value to stack
     S    |    16   
     X    |     4   
     Y    |     6   
+    Z    |     8   
 
 POP
 ---
@@ -42,6 +43,7 @@ Load value from stack
     S    |    17   
     X    |     5   
     Y    |     7   
+    Z    |     9   
 
 MOV
 ---
@@ -65,6 +67,7 @@ Load register or memory with value
    SP    |          |          |          |          |          |          |          |          |          |          |          |    2e    |    30    |    32    |          |    2d    |          |          |         
    ISP   |          |          |          |          |          |          |          |          |          |          |          |    3c    |    3e    |    40    |          |    3b    |          |          |         
    SSP   |          |          |          |          |          |          |          |          |          |          |          |    35    |    37    |    39    |          |    34    |          |          |         
+  [$ea]  |    ad    |    af    |    b1    |    b3    |    b5    |    b7    |    b9    |          |          |          |          |          |          |          |          |          |          |          |         
 
 LSL
 ---
@@ -81,6 +84,7 @@ Logical shift left
    BA    |    7e   
    DC    |    93   
    FE    |    a8   
+  [$ea]  |    60   
 
 ASR
 ---
@@ -97,6 +101,7 @@ Arithmatic shift right
    BA    |    7f   
    DC    |    94   
    FE    |    a9   
+  [$ea]  |    61   
 
 LSR
 ---
@@ -113,6 +118,7 @@ Logical shift right
    BA    |    80   
    DC    |    95   
    FE    |    aa   
+  [$ea]  |    62   
 
 EXTEND
 ---
@@ -129,6 +135,7 @@ Sign extend 8-bit value to 16-bit word
    BA    |    81   
    DC    |    96   
    FE    |    ab   
+  [$ea]  |    63   
 
 INC
 ---
@@ -148,6 +155,7 @@ Increment value
    BA    |    82   
    DC    |    97   
    FE    |    ac   
+  [$ea]  |    64   
 
 DEC
 ---
@@ -167,6 +175,7 @@ Decreent value
    BA    |    83   
    DC    |    98   
    FE    |    ad   
+  [$ea]  |    65   
 
 ADD
 ---
@@ -184,6 +193,7 @@ Add values without carry-in
    BA    |          |          |          |          |          |          |          |          |    84    |    89    |    8e    |         
    DC    |          |          |          |          |          |          |          |          |    99    |    9e    |    a3    |         
    FE    |          |          |          |          |          |          |          |          |    ae    |    b3    |    b8    |         
+  [$ea]  |    67    |    69    |    6b    |    6d    |    6f    |    71    |    73    |          |          |          |          |         
 
 SUB
 ---
@@ -201,6 +211,7 @@ Subtract values without borrow
    BA    |          |          |          |          |          |          |          |          |    85    |    8a    |    8f    |         
    DC    |          |          |          |          |          |          |          |          |    9a    |    9f    |    a4    |         
    FE    |          |          |          |          |          |          |          |          |    af    |    b4    |    b9    |         
+  [$ea]  |    75    |    77    |    79    |    7b    |    7d    |    7f    |    81    |          |          |          |          |         
 
 AND
 ---
@@ -218,6 +229,7 @@ Bit-wise AND values
    BA    |          |          |          |          |          |          |          |          |          |    86    |    8b    |    90    |         
    DC    |          |          |          |          |          |          |          |          |          |    9b    |    a0    |    a5    |         
    FE    |          |          |          |          |          |          |          |          |          |    b0    |    b5    |    ba    |         
+  [$ea]  |          |    83    |    85    |    87    |    89    |    8b    |    8d    |    8f    |          |          |          |          |         
 
 OR
 ---
@@ -235,6 +247,7 @@ Bit-wise OR values
    BA    |          |          |          |          |          |          |          |          |          |    87    |    8c    |    91    |         
    DC    |          |          |          |          |          |          |          |          |          |    9c    |    a1    |    a6    |         
    FE    |          |          |          |          |          |          |          |          |          |    b1    |    b6    |    bb    |         
+  [$ea]  |          |    91    |    93    |    95    |    97    |    99    |    9b    |    9d    |          |          |          |          |         
 
 XOR
 ---
@@ -252,6 +265,7 @@ Exclusive OR values
    BA    |          |          |          |          |          |          |          |          |          |    88    |    8d    |    92    |         
    DC    |          |          |          |          |          |          |          |          |          |    9d    |    a2    |    a7    |         
    FE    |          |          |          |          |          |          |          |          |          |    b2    |    b7    |    bc    |         
+  [$ea]  |          |    9f    |    a1    |    a3    |    a5    |    a7    |    a9    |    ab    |          |          |          |          |         
 
 JMP
 ---
@@ -261,6 +275,7 @@ Load PC with effective address
 -------- | --------
    $ea   |    c9   
   +/-##  |    aa   
+  [$ea]  |    bb   
 
 CALL
 ---
@@ -270,6 +285,7 @@ Push PC to stack, and load PC with effective address
 -------- | --------
    $ea   |    d9   
   +/-##  |    b9   
+  [$ea]  |    cb   
 
 NEG
 ---
@@ -282,6 +298,7 @@ Two's complement negate value
     C    |     a   
     D    |     c   
     E    |     e   
+    F    |    10   
 
 CPL
 ---
@@ -294,6 +311,7 @@ Bitwise complement value
     C    |     b   
     D    |     d   
     E    |     f   
+    F    |    11   
 
 ENTER
 ---
@@ -307,6 +325,7 @@ Enter supervisor routine
     D    |    e2   
     E    |    e3   
     F    |    e4   
+   ##    |    e5   
 
 ADC
 ---
@@ -319,6 +338,7 @@ Add values with carry
     C    |    1c    |    1e    |    20    |    22    |    24    |    26    |    28   
     D    |    2a    |    2c    |    2e    |    30    |    32    |    34    |    36   
     E    |    38    |    3a    |    3c    |    3e    |    40    |    42    |    44   
+    F    |    46    |    48    |    4a    |    4c    |    4e    |    50    |    52   
 
 SBC
 ---
@@ -331,6 +351,7 @@ Subtract values with borrow
     C    |    1d    |    1f    |    21    |    23    |    25    |    27    |    29   
     D    |    2b    |    2d    |    2f    |    31    |    33    |    35    |    37   
     E    |    39    |    3b    |    3d    |    3f    |    41    |    43    |    45   
+    F    |    47    |    49    |    4b    |    4d    |    4f    |    51    |    53   
 
 MUL
 ---
@@ -340,6 +361,7 @@ Multiply 32-bit value with 16-bit value
 -------- | -------- | -------- | -------- | -------- | -------- | --------
    BA    |          |          |    62    |    69    |    70    |    77   
    DC    |    54    |    5b    |          |          |    71    |    78   
+   FE    |    55    |    5c    |    63    |    6a    |          |         
 
 DIV
 ---
@@ -352,6 +374,7 @@ Divide two 16-bit values
     C    |    64    |    65    |          |    66    |    67    |    68   
     D    |    6b    |    6c    |    6d    |          |    6e    |    6f   
     E    |    72    |    73    |    74    |    75    |          |    76   
+    F    |    79    |    7a    |    7b    |    7c    |    7d    |         
 
 LEA
 ---
@@ -364,6 +387,7 @@ Load register with effective address
     Z    |     2   
    SP    |     3   
    ISP   |     5   
+   SSP   |     4   
 
 COPY
 ---
@@ -377,6 +401,7 @@ Block copy operation (C = byte count)
   [Y++]  |    df    |          |          |          |    e0    |         
   [Y--]  |          |          |          |          |          |    e1   
   [Z++]  |    e3    |          |          |          |    e4    |         
+  [Z--]  |          |          |          |          |          |    e5   
 
 TLB
 ---
@@ -386,6 +411,7 @@ Load TLB register from memory
 -------- | -------- | --------
   BANK   |    e8    |         
   FLAG   |    e9    |         
+  INDEX  |    e6    |    e7   
 
 LEAVE
 ---
@@ -394,3 +420,4 @@ Leave supervisor mode
          |     A    |     B    |     C    |     D    |     E    |     F   
 -------- | -------- | -------- | -------- | -------- | -------- | --------
    $ea   |    ea    |    ec    |    ee    |    f0    |    f2    |    f4   
+  [$ea]  |    eb    |    ed    |    ef    |    f1    |    f3    |    f5   
