@@ -8,7 +8,7 @@ module.exports = function(grunt) {
 	// Please see the Grunt documentation for more information regarding task
 	// creation: http://gruntjs.com/creating-tasks
 
-	grunt.registerMultiTask('microcode', 'Generates parsers from PEG grammars.', function() {
+	grunt.registerMultiTask('microcode', 'Compile microcode.', function() {
 		grunt.log.write('Compiling microcode', this.data.source, "\n");
 
 		var options = { output: "parser" },

@@ -32,6 +32,13 @@ module.exports = function(grunt) {
 		  }
 		},
 
+		// Instruction table generator
+		instructions: {
+			table: {
+				table: "instructions/table.json"
+			}
+		},
+
 		// Microcode builder
 		microcode: {
 			logisim: {
@@ -40,7 +47,7 @@ module.exports = function(grunt) {
 
 				layout: "microcode/layout.txt",
 				source: "microcode/micro/main.txt",
-				
+
 				output: {
 					"binary": "web/microcode.bin"
 				}
@@ -48,6 +55,7 @@ module.exports = function(grunt) {
 		}
 	});
 
+	grunt.loadTasks('instructions');
 	grunt.loadTasks('microcode');
 	grunt.loadNpmTasks('grunt-browserify');
 	grunt.loadNpmTasks('grunt-contrib-watch');

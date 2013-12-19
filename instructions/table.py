@@ -25,8 +25,8 @@ CONDITION = ["EQ", "NE", "CS", "CC", "MI", "PL", "VS", "VC", "HI", "LS", "GE", "
 # * Missing ADC and SBC
 
 def GenMainTable():
-	yield { "instruction": "RTI" }
-	yield { "instruction": "RET" }
+	yield { "instruction": "RTI", "terms": [] }
+	yield { "instruction": "RET", "terms": [] }
 
 	# --- Stack block ---
 	for x in REGISTERS + STATUS:
@@ -50,7 +50,7 @@ def GenMainTable():
 		yield { "instruction": a, "terms": [GENERAL[0]] }
 
 	for a in DUAL:
-		for y in GENERAL + ["#"]:
+		for y in GENERAL + ["##"]:
 			yield { "instruction": a, "terms": [GENERAL[0], y] }
 
 	for x in BRANCH:
