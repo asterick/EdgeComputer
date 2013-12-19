@@ -82,9 +82,10 @@ module.exports = function (grunt) {
 					return (v + "          ").substr(0,l);
 				}
 				console.log(pad(""), "|", pad("Term"));
+				console.log(pad("--------"),"|",pad("--------"));
 
 				Object.keys(grid).forEach(function (v) {
-					console.log(pad(v), " | ", pad(grid[v] ? grid[v].toString(16) : ""))
+					console.log(pad(v), "|", pad(grid[v] ? grid[v].toString(16) : ""))
 				})
 			}
 

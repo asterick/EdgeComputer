@@ -17,32 +17,34 @@ PUSH
 undefined
 
    | Te
-X   |  2 
-Y   |  4 
-Z   |  6 
-A   |  8 
-B   |  a 
-C   |  c 
-D   |  e 
-E   |  10
-F   |  12
-S   |  14
+-- | --
+X  | 2 
+Y  | 4 
+Z  | 6 
+A  | 8 
+B  | a 
+C  | c 
+D  | e 
+E  | 10
+F  | 12
+S  | 14
 
 POP
 ---
 undefined
 
    | Te
-X   |  3 
-Y   |  5 
-Z   |  7 
-A   |  9 
-B   |  b 
-C   |  d 
-D   |  f 
-E   |  11
-F   |  13
-S   |  15
+-- | --
+X  | 3 
+Y  | 5 
+Z  | 7 
+A  | 9 
+B  | b 
+C  | d 
+D  | f 
+E  | 11
+F  | 13
+S  | 15
 
 MOV
 ---
@@ -75,102 +77,108 @@ LSL
 undefined
 
       | Term 
-A      |  71   
-B      |  12   
-C      |  18   
-D      |  1e   
-E      |  24   
-F      |  2a   
-BA     |  7e   
-DC     |  93   
-FE     |  a8   
-[$ea]  |  60   
+----- | -----
+A     | 71   
+B     | 12   
+C     | 18   
+D     | 1e   
+E     | 24   
+F     | 2a   
+BA    | 7e   
+DC    | 93   
+FE    | a8   
+[$ea] | 60   
 
 ASL
 ---
 undefined
 
       | Term 
-A      |  72   
-B      |  13   
-C      |  19   
-D      |  1f   
-E      |  25   
-F      |  2b   
-BA     |  7f   
-DC     |  94   
-FE     |  a9   
-[$ea]  |  61   
+----- | -----
+A     | 72   
+B     | 13   
+C     | 19   
+D     | 1f   
+E     | 25   
+F     | 2b   
+BA    | 7f   
+DC    | 94   
+FE    | a9   
+[$ea] | 61   
 
 LSR
 ---
 undefined
 
       | Term 
-A      |  73   
-B      |  14   
-C      |  1a   
-D      |  20   
-E      |  26   
-F      |  2c   
-BA     |  80   
-DC     |  95   
-FE     |  aa   
-[$ea]  |  62   
+----- | -----
+A     | 73   
+B     | 14   
+C     | 1a   
+D     | 20   
+E     | 26   
+F     | 2c   
+BA    | 80   
+DC    | 95   
+FE    | aa   
+[$ea] | 62   
 
 EXTEND
 ---
 undefined
 
       | Term 
-A      |  74   
-B      |  15   
-C      |  1b   
-D      |  21   
-E      |  27   
-F      |  2d   
-BA     |  81   
-DC     |  96   
-FE     |  ab   
-[$ea]  |  63   
+----- | -----
+A     | 74   
+B     | 15   
+C     | 1b   
+D     | 21   
+E     | 27   
+F     | 2d   
+BA    | 81   
+DC    | 96   
+FE    | ab   
+[$ea] | 63   
 
 INC
 ---
 undefined
 
       | Term 
-A      |  75   
-X      |       
-Y      |  2    
-Z      |  4    
-B      |  16   
-C      |  1c   
-D      |  22   
-E      |  28   
-F      |  2e   
-BA     |  82   
-DC     |  97   
-FE     |  ac   
-[$ea]  |  64   
+----- | -----
+A     | 75   
+X     |      
+Y     | 2    
+Z     | 4    
+B     | 16   
+C     | 1c   
+D     | 22   
+E     | 28   
+F     | 2e   
+BA    | 82   
+DC    | 97   
+FE    | ac   
+[$ea] | 64   
 
 DEC
 ---
 undefined
 
       | Term 
-A      |  76   
-X      |  1    
-Y      |  3    
-Z      |  5    
-B      |  17   
-C      |  1d   
-D      |  23   
-E      |  29   
-F      |  2f   
-BA     |  83   
-DC     |  98   
-FE     |  ad   
-[$ea]  |  65   
+----- | -----
+A     | 76   
+X     | 1    
+Y     | 3    
+Z     | 5    
+B     | 17   
+C     | 1d   
+D     | 23   
+E     | 29   
+F     | 2f   
+BA    | 83   
+DC    | 98   
+FE    | ad   
+[$ea] | 65   
 
 ADD
 ---
@@ -275,55 +283,60 @@ JMP
 undefined
 
       | Term 
-+/-##  |  a8   
-$ea    |  c9   
-[$ea]  |  bb   
+----- | -----
++/-## | a8   
+$ea   | c9   
+[$ea] | bb   
 
 CALL
 ---
 undefined
 
       | Term 
-+/-##  |  b7   
-$ea    |  d9   
-[$ea]  |  cb   
+----- | -----
++/-## | b7   
+$ea   | d9   
+[$ea] | cb   
 
 NEG
 ---
 undefined
 
    | Te
-A   |  6 
-B   |  8 
-C   |  a 
-D   |  c 
-E   |  e 
-F   |  10
+-- | --
+A  | 6 
+B  | 8 
+C  | a 
+D  | c 
+E  | e 
+F  | 10
 
 CPL
 ---
 undefined
 
    | Te
-A   |  7 
-B   |  9 
-C   |  b 
-D   |  d 
-E   |  f 
-F   |  11
+-- | --
+A  | 7 
+B  | 9 
+C  | b 
+D  | d 
+E  | f 
+F  | 11
 
 ENTER
 ---
 undefined
 
    | Te
-A   |  df
-B   |  e0
-C   |  e1
-D   |  e2
-E   |  e3
-F   |  e4
-##  |  e5
+-- | --
+A  | df
+B  | e0
+C  | e1
+D  | e2
+E  | e3
+F  | e4
+## | e5
 
 ADC
 ---
