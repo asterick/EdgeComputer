@@ -127,7 +127,7 @@ def GenMemTable():
 		yield { "instruction": "LEA", "terms": [x, "$ea"] }
 
 	for x in ["byte", "word"]:
-		for a in SINGLE:
+		for a in SINGLE + INCREMENT:
 			yield { "instruction": a, "width": x, "terms": ["[$ea]"] }
 
 		for a in DUAL + ["MOV"]:

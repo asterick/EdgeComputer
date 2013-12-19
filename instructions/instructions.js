@@ -178,8 +178,7 @@ module.exports = function (grunt) {
 		});
 
 		if (this.data.documentation) {
-			var docs = markdown(instructions, shifts);
-			grunt.file.write(this.data.documentation + ".md", docs)
+			grunt.file.write(this.data.documentation + ".md", markdown(instructions, shifts))
 		}
 	});
 };
