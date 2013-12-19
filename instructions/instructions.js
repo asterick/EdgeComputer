@@ -61,7 +61,7 @@ function table(columns, write) {
 	}
 
 	set (0, 1, "--------");
-	Object.keys(columns).forEach(function (k, x) {
+	sort(Object.keys(columns)).forEach(function (k, x) {
 		var c = columns[k];
 		set(x + 1, 0, k);
 		set(x + 1, 1, "--------");
