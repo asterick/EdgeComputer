@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# TODO: MODIFY THIS TO GENERATE MICROCODE SOURCE, AND ASSEMBLER TABLE
+# TODO: MOV TO LONG VALUE
 
 import itertools, json
 
@@ -107,6 +107,12 @@ def GenShift2Table():
 			for z in ["ADC", "SBC"]:
 				yield { "instruction": z, "terms": [x, y] }
 
+	for x in POINTER:
+		for y in ADDRESS:
+			yield { "instruction": "MOV", "terms": [x, y] }
+			yield { "instruction": "MOV", "terms": [y, x] }
+
+
 	for x in GENERAL:
 		for y in WORD:
 			if not x in y:
@@ -168,4 +174,8 @@ def GenTable(inst):
 	return inst
 
 output = { hex((i+1)*0x100):GenTable(t) for (i, t) in enumerate([GenMainTable, GenShift1Table, GenShift2Table, GenMemTable]) }
+
+for (k, v) in output.items():
+	print k, len(v) / 2.56
+
 file("table.json", "w").write(json.dumps(output, indent=4))
