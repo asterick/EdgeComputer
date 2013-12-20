@@ -9,7 +9,7 @@ var description = {
 	ADC: "Add values with carry",
 	SBC: "Subtract values with borrow",
 	INC: "Increment value",
-	DEC: "Decreent value",
+	DEC: "Decrement value",
 	ASR: "Arithmatic shift right",
 	LSL: "Logical shift left",
 	LSR: "Logical shift right",
@@ -48,6 +48,10 @@ function unique(a) {
 	});
 }
 
+function hex(a) {
+	return ((a < 16) ? "0" : "") + a.toString(16).toUpperCase();
+}
+
 function table(columns, write) {
 	var rows = sort(unique(Object.keys(columns).reduce(function (acc, v) {
 			acc.push.apply(acc, Object.keys(columns[v]));
@@ -60,11 +64,11 @@ function table(columns, write) {
 		(table[x] || (table[x] = []))[y] = v;
 	}
 
-	set (0, 1, "--------");
+	set (0, 1, "-----");
 	sort(Object.keys(columns)).forEach(function (k, x) {
 		var c = columns[k];
 		set(x + 1, 0, k);
-		set(x + 1, 1, "--------");
+		set(x + 1, 1, "-----");
 
 		rows.forEach(function (k, y) {
 			var r = c[k];
@@ -100,6 +104,43 @@ function markdown(instructions, shifts) {
 			Array.prototype.slice.call(arguments, 0).join(" ") + "\n";
 	}
 
+	function code(s) {
+		var c = hex(s & 0xFF),
+				b = s & ~0xFF,
+				sh = shifts[b];
+
+		if (b == 0x100) {
+			return c;
+		}
+
+		if (sh.length === 1) {
+			return hex(sh[0].code & 0xFF) + " " + c;
+		}
+
+		return "ab " + c;
+	}
+
+	write("Effective address prefix");
+	write("------------------------");
+	write("");
+
+	Object.keys(shifts).forEach(function (s) {
+		var sh = shifts[s],
+				grid;
+
+		sh.forEach(function (s) {
+			if (!s.effective_address) { return ; }
+			grid || (grid = { Modes: {} });
+			grid.Modes[hex(s.code & 0xFF)] = s.effective_address.join("+");
+		})
+
+		if (!grid) { return ; }
+
+		table(grid, write);
+	});
+
+	write("");
+
 	Object.keys(instructions).forEach(function(k) {
 		var inst = instructions[k],
 				grid = {};
@@ -116,30 +157,41 @@ function markdown(instructions, shifts) {
 		case 2:
 			inst.forEach(function (i) {
 				var a = i.terms[0],
-						b = i.terms[1],
-						c = i.code & 0xFF;
+						b = i.terms[1];
 
-				(grid[b] || (grid[b] = {}))[a] = c.toString(16);
+				(grid[b] || (grid[b] = {}))[a] = code(i.code);
 			});
 			table(grid, write);
 			break ;
 		case 1:
 			inst.forEach(function (i) {
-				var a = i.terms[0],
-						c = i.code & 0xFF;
+				var a = i.terms[0];
 
-				grid[a] = c.toString(16);
+				grid[a] = code(i.code);
 			});
 			table({ Code: grid }, write);
 			break ;
 		case 0:
-			grid = inst[0].code & 0xFF;
-			write("Opcode:", grid.toString(16));
+			write("Opcode:", code(inst[0].code));
 			break ;
 		}
 	});
 
 	return output;
+}
+
+function statecode(instruction) {
+	Object.keys(instructions).forEach(function(k) {
+		var inst = instructions[k],
+				grid = {};
+
+		var terms = unique(inst.reduce(function (acc, i) {
+			acc.push.apply(acc, i.terms);
+			return acc;
+		}, []));
+
+		console.log(k+":", terms.join(", "));
+	});
 }
 
 module.exports = function (grunt) {
