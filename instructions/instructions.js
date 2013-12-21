@@ -30,6 +30,7 @@ var description = {
 	DIV: "Divide two 16-bit values",
 };
 
+// TODO: generate assembler table
 
 function sort(a) {
 	return a.sort(function (a, b) {
@@ -117,7 +118,7 @@ function markdown(instructions, shifts) {
 			return hex(sh[0].code & 0xFF) + " " + c;
 		}
 
-		return "ab " + c;
+		return "ea " + c;
 	}
 
 	write("Effective address prefix");
@@ -180,18 +181,74 @@ function markdown(instructions, shifts) {
 	return output;
 }
 
-function statecode(instruction) {
+function statecode(instructions, shifts) {
+	var output = "";
+
+	function write() {
+		output +=
+			Array.prototype.slice.call(arguments, 0).join(" ") + "\n";
+	}
+
+	var type = {
+			"#": "imm8", "##": "imm16", "###": "imm24",
+			"A": "reg", "B": "reg", "C": "reg", "D": "reg", "E": "reg", "F": "reg",
+			"S": "status",
+			"BA": "regpair", "DC": "regpair", "FE": "regpair",
+			"X": "addr", "Y": "addr", "Z": "addr", "SP": "addr", "SSP": "addr", "ISP": "addr",
+			"$ea": "addr", "[$ea]": "memaddr", "$rel": "reladdr",
+			"[$ea++]": "memaddrinc", "[X++]": "memaddrinc", "[Y++]": "memaddrinc", "[Z++]": "memaddrinc",
+			"[$ea--]": "memaddrdec", "[X--]": "memaddrdec", "[Y--]": "memaddrdec", "[Z--]": "memaddrdec",
+			"[$ea]++": "incmemaddr"
+		},
+		reg = {
+			"A": "r0", "B": "r1", "C": "r2", "D": "r3", "E": "r4", "F": "r5",
+			"BA": "r1, r0", "DC": "r3, r2", "FE": "r5, r4",
+			"X": "a0", "Y": "a1", "Z": "a2", "SP": "a4", "SSP": "a5", "ISP": "a6",
+			"$ea": "a7", "[$ea]": "a7", "$rel": "a3",
+			"[$ea++]": "a7", "[X++]": "a0", "[Y++]": "a1", "[Z++]": "a2",
+			"[$ea--]": "a7", "[X--]": "a0", "[Y--]": "a1", "[Z--]": "a2",
+			"[$ea]++": "a7"
+		};
+
+	function map(macro, terms) {
+		var types = terms.map(function (v) { 
+					return ("_"+type[v]).toUpperCase(); 
+				}),
+				args = terms.reduce(function (acc, v) {
+					if (reg[v]) {
+						acc.push(reg[v]);
+					}
+					return acc;
+				}, []);
+
+		return "#" + macro + types.join("") + "(" + args.join(", ") +");";
+	}
+
+	Object.keys(shifts).forEach(function (k) {
+		var table = shifts[k];
+
+		table.forEach(function (i) {
+			write("state(0x"+i.code.toString(16)+") {");
+			if (i.effective_address) {
+				write(map("SET_EA", i.effective_address));
+			}
+			write("#next_block("+k+");")
+			write("}");
+		});
+	});
+
 	Object.keys(instructions).forEach(function(k) {
 		var inst = instructions[k],
 				grid = {};
 
-		var terms = unique(inst.reduce(function (acc, i) {
-			acc.push.apply(acc, i.terms);
-			return acc;
-		}, []));
-
-		console.log(k+":", terms.join(", "));
+		inst.map(function (i) {
+			write("state(0x"+i.code.toString(16)+") {");
+			write(map(k, i.terms));
+			write("}");
+		});
 	});
+
+	return output;
 }
 
 module.exports = function (grunt) {
@@ -231,6 +288,11 @@ module.exports = function (grunt) {
 
 		if (this.data.documentation) {
 			grunt.file.write(this.data.documentation + ".md", markdown(instructions, shifts))
+		}
+
+		if (this.data.microcode) {
+			var code = statecode(instructions, shifts);
+			grunt.file.write(this.data.microcode, code);
 		}
 	});
 };

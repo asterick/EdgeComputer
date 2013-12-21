@@ -59,15 +59,15 @@ def GenMainTable():
 			yield { "instruction": a, "terms": [GENERAL[0], y] }
 
 	for x in BRANCH:
-		yield { "instruction": x, "terms": ["+/-##"] }
+		yield { "instruction": x, "terms": ["$rel"] }
 		for y in CONDITION:
-			yield { "instruction": x, "condition": y, "terms": ["+/-##"] }
+			yield { "instruction": x, "condition": y, "terms": ["$rel"] }
 
 	# --- Memory function ---
 	yield { "shift_table": 0x400, "effective_address": ["###"] }
 
 	for a in STACK:
-		yield { "shift_table": 0x400, "effective_address": [a, "+/-###"] }
+		yield { "shift_table": 0x400, "effective_address": [a, "$rel"] }
 
 	for y in [None] + GENERAL:
 		for a in ADDRESS:
