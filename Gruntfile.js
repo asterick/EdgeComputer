@@ -67,6 +67,6 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-contrib-connect');
 
-	grunt.registerTask("default", ["microcode", "browserify"]);
+	grunt.registerTask("default", ["instructions", "microcode", "browserify"]);
 	grunt.registerTask("dev", ["default", "connect", "watch"]);
 };
