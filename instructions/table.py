@@ -59,9 +59,9 @@ def GenMainTable():
 			yield { "instruction": a, "terms": [GENERAL[0], y] }
 
 	for x in BRANCH:
-		yield { "instruction": x, "terms": ["$rel"] }
+		yield { "instruction": x, "terms": ["pc", "$rel"] }
 		for y in CONDITION:
-			yield { "instruction": x, "condition": y, "terms": ["$rel"] }
+			yield { "instruction": x, "condition": y, "terms": ["pc", "$rel"] }
 
 	# --- Memory function ---
 	yield { "shift_table": 0x400, "effective_address": ["###"] }

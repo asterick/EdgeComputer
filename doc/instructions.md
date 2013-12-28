@@ -343,21 +343,77 @@ JMP
 ---
 Load PC with effective address
 
-      |  Code
------ | -----
- $ea  | ea CD
- $rel |   AA 
-[$ea] | ea BF
+        |  $rel | undefined
+ -----  | ----- |   -----  
+   pc   |   9C  |          
+  $ea   |       |   ea BE  
+ [$ea]  |       |   ea BF  
+ .CC pc |   A0  |          
+ .CS pc |   9F  |          
+ .EQ pc |   9D  |          
+ .GE pc |   A7  |          
+ .GT pc |   A9  |          
+ .HI pc |   A5  |          
+ .LE pc |   AA  |          
+ .LS pc |   A6  |          
+ .LT pc |   A8  |          
+ .MI pc |   A1  |          
+ .NE pc |   9E  |          
+ .PL pc |   A2  |          
+ .VC pc |   A4  |          
+ .VS pc |   A3  |          
+.CC $ea |       |   ea C3  
+.CS $ea |       |   ea C2  
+.EQ $ea |       |   ea C0  
+.GE $ea |       |   ea CA  
+.GT $ea |       |   ea CC  
+.HI $ea |       |   ea C8  
+.LE $ea |       |   ea CD  
+.LS $ea |       |   ea C9  
+.LT $ea |       |   ea CB  
+.MI $ea |       |   ea C4  
+.NE $ea |       |   ea C1  
+.PL $ea |       |   ea C5  
+.VC $ea |       |   ea C7  
+.VS $ea |       |   ea C6  
 
 CALL
 ---
 Push PC to stack, and load PC with effective address
 
-      |  Code
------ | -----
- $ea  | ea DD
- $rel |   B9 
-[$ea] | ea CF
+        |  $rel | undefined
+ -----  | ----- |   -----  
+   pc   |   AB  |          
+  $ea   |       |   ea CE  
+ [$ea]  |       |   ea CF  
+ .CC pc |   AF  |          
+ .CS pc |   AE  |          
+ .EQ pc |   AC  |          
+ .GE pc |   B6  |          
+ .GT pc |   B8  |          
+ .HI pc |   B4  |          
+ .LE pc |   B9  |          
+ .LS pc |   B5  |          
+ .LT pc |   B7  |          
+ .MI pc |   B0  |          
+ .NE pc |   AD  |          
+ .PL pc |   B1  |          
+ .VC pc |   B3  |          
+ .VS pc |   B2  |          
+.CC $ea |       |   ea D3  
+.CS $ea |       |   ea D2  
+.EQ $ea |       |   ea D0  
+.GE $ea |       |   ea DA  
+.GT $ea |       |   ea DC  
+.HI $ea |       |   ea D8  
+.LE $ea |       |   ea DD  
+.LS $ea |       |   ea D9  
+.LT $ea |       |   ea DB  
+.MI $ea |       |   ea D4  
+.NE $ea |       |   ea D1  
+.PL $ea |       |   ea D5  
+.VC $ea |       |   ea D7  
+.VS $ea |       |   ea D6  
 
 NEG
 ---

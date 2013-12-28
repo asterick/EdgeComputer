@@ -160,13 +160,17 @@ function markdown(instructions, shifts) {
 				var a = i.terms[0],
 						b = i.terms[1];
 
-				(grid[b] || (grid[b] = {}))[a] = code(i.code);
+				if (i.condition) { a = "." + i.condition + " " + a; }
+
+				(grid[b] || (grid[b] = {}))[a] = code(i.code, i.condition);
 			});
 			table(grid, write);
 			break ;
 		case 1:
 			inst.forEach(function (i) {
 				var a = i.terms[0];
+
+				if (i.condition) { a = "." + i.condition + " " + a; }
 
 				grid[a] = code(i.code);
 			});
@@ -208,13 +212,30 @@ function statecode(instructions, shifts) {
 			"[$ea++]": "a7", "[X++]": "a0", "[Y++]": "a1", "[Z++]": "a2",
 			"[$ea--]": "a7", "[X--]": "a0", "[Y--]": "a1", "[Z--]": "a2",
 			"[$ea]++": "a7"
+		},
+		cond = {
+			"CS": "c",
+			"CC": "~c",
+			"MI": "n",
+			"PL": "~n",
+			"VS": "v",
+			"VC": "~v",
+			"EQ": "z",
+			"NE": "~z",
+			"GT": "gt",
+			"GE": "ge",
+			"LE": "~gt",
+			"LT": "~ge",
+			"HI": "hi",
+			"LS": "~hi"
 		};
 
 	function map(macro, terms) {
-		var types = terms.map(function (v) { 
-					return ("_"+type[v]).toUpperCase(); 
+		var types = terms.map(function (v) {
+					return ("_"+type[v]).toUpperCase();
 				}),
 				args = terms.reduce(function (acc, v) {
+
 					if (reg[v]) {
 						acc.push(reg[v]);
 					}
@@ -243,7 +264,15 @@ function statecode(instructions, shifts) {
 
 		inst.map(function (i) {
 			write("state(0x"+i.code.toString(16)+") {");
-			write(map(k, i.terms));
+			var out = map(k, i.terms);
+
+			if (i.condition) {
+				var flags = cond[i.condition];
+
+				write("if (",flags,") {", out, "}");
+			} else {
+				write(out);
+			}
 			write("}");
 		});
 	});
@@ -274,7 +303,8 @@ module.exports = function (grunt) {
 
 					insert.push({
 						code: entry + index,
-						terms: code.terms
+						terms: code.terms,
+						condition: code.condition
 					});
 
 					options.push.apply(options, code.terms)
