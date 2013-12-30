@@ -2,6 +2,7 @@
 
 var PEG = require('pegjs'),
 		flatten = require("./compile/flatten.js"),
+		ejs = require('ejs'),
 		compile = flatten.compile;
 
 module.exports = function(grunt) {
@@ -23,7 +24,12 @@ module.exports = function(grunt) {
 			var target = outputs[format];
 
 			switch(format) {
-				// TODO: Verilog output?
+				case 'verilog':
+					var base = require("fs").readFileSync("microcode/verilog.v.ejs", 'utf8'),
+							tmpl = ejs.compile(base);
+
+					grunt.file.write(target, tmpl({bytes: output}));
+					break ;
 				case 'binary':
 					grunt.file.write(target, new Buffer(output));
 					break ;

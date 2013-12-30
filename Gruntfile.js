@@ -55,7 +55,8 @@ module.exports = function(grunt) {
 				source: "microcode/micro/main.txt",
 
 				output: {
-					"binary": "web/microcode.bin"
+					"binary": "web/microcode.bin",
+					"verilog": "fpga/microcode.v"
 				}
 			}
 		}

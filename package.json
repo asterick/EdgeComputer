@@ -24,6 +24,7 @@
     "browserify": "~2.35.4",
     "grunt-browserify": "~1.2.11",
     "browserify-ejs": "0.0.2",
-    "brfs": "0.0.8"
+    "brfs": "0.0.8",
+    "ejs": "~0.8.5"
   }
 }

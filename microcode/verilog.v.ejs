@@ -1,0 +1,85 @@
+<%
+function hex(v, l) {
+	var c = v.toString(16);
+	while (c.length < (l || 2)) { c = "0" + c; }
+	return c;
+}
+%>/***
+GENERATED FROM TEMPLATE, DO NOT EDIT BY HAND
+***/
+
+module microcode (
+		// Input
+		address,
+
+		// Output, unpacked
+		next_state, condition, cond_src,
+		r_term, l_term, alu_op, carry,
+		imm_invert, imm_offset, imm_bit,
+		r_select, l_select,
+		z_reg, latch_zreg, latch_tlb, latch_zflags, latch_aflags,
+		mem_addr_op, mem_addr, mem_dir, mem_byte, mem_active, disable_tlb,
+		privileged
+	);
+
+	input [12:0] address;
+
+	// Flags (1 bit)
+	output privileged;
+
+	// Memory (8-bits)
+	output disable_tlb;
+	output mem_active;
+	output mem_byte;
+	output mem_dir;
+	output [2:0] mem_addr;
+	output [1:0] mem_addr_op;
+
+	// Latch targets (9 bits)
+	output latch_aflags;
+	output latch_zflags;
+	output [1:0] latch_tlb;
+	output [1:0] latch_zreg;
+	output [2:0] z_reg;
+
+	// Source values (6 bits)
+	output [2:0] l_select;
+	output [2:0] r_select;
+
+	// Immediate encoder (6 bits)
+	output [3:0] imm_bit;
+	output imm_offset;
+	output imm_invert;
+
+	// ALU configuration (8 bits)
+	output carry;
+	output [2:0] alu_op;
+	output [1:0] l_term;
+	output [1:0] r_term;
+
+	// State target (17 bits)
+	output cond_src;
+	output [2:0] 	condition;
+	output [12:0] next_state;
+
+
+	assign {
+		next_state, condition, cond_src,
+		r_term, l_term, alu_op, carry,
+		imm_invert, imm_offset, imm_bit,
+		r_select, l_select,
+		z_reg, latch_zreg, latch_tlb, latch_zflags, latch_aflags,
+		mem_addr_op, mem_addr, mem_dir, mem_byte, mem_active, disable_tlb,
+		privileged
+	} = data;
+
+	// Data buffer for the packed rom
+	reg [55:0] data;
+
+	// This is our rom (template)
+	always @(address) begin
+		case (address)<% for (var b = 0; b < bytes.byteLength; b += 7) { %>
+			13'h<%= hex(b / 7, 4) %> : data = { <% for (var i = 0; i < 7; i++) { %><% if(i) { %>, <% } %>8'h<%= hex(bytes[(6-i)+b]) %><% } %> };<% } %>
+		endcase
+	end
+endmodule
